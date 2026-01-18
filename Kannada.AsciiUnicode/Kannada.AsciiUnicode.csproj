@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>1591</NoWarn>
+    
+    <PackageId>Kannada.AsciiUnicode</PackageId>
+    <Version>1.0.0</Version>
+    <Title>Kannada ASCII ↔ Unicode Converter</Title>
+    <Authors>Ravikumar Pawar</Authors>
+    <Company>Kagapa Software</Company>
+    <Description>High-performance Kannada Nudi/Baraha ASCII to Unicode SDK</Description>
+    <PackageTags>kannada;unicode;ascii;nudi;baraha;conversion</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/kagapa/KannadaAsciiUnicode</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\**\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Universal netstandard2.0 JSON parsing -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+</Project>
