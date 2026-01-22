@@ -16,7 +16,7 @@ namespace Kannada.AsciiUnicode.Converters
 
         private KannadaConverter()
         {
-            var (mapping, brokenCases, vattaksharagalu, asciiArkavattu, dependentVowels, ignoreList) =
+            var (mapping, brokenCases, vattaksharagalu, asciiArkavattu, dependentVowels, ignoreList, reverseMapping) =
                 KannadaMappingLoader.LoadMappings();
 
             _converter = new KannadaAsciiConverter(
@@ -25,7 +25,8 @@ namespace Kannada.AsciiUnicode.Converters
                 vattaksharagalu,
                 asciiArkavattu,
                 dependentVowels,
-                ignoreList
+                ignoreList,
+                reverseMapping
             );
         }
 
@@ -42,7 +43,7 @@ namespace Kannada.AsciiUnicode.Converters
             if (unicodeText == null)
                 throw new ArgumentNullException(nameof(unicodeText));
 
-            throw new NotImplementedException("Unicode to ASCII not yet implemented.");
+            return string.IsNullOrEmpty(unicodeText) ? string.Empty : _converter.ReverseConvert(unicodeText);
         }
 
         public string Convert(string text, KannadaAsciiFormat format)

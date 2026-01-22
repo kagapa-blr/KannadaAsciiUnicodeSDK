@@ -16,19 +16,24 @@ namespace Kannada.AsciiUnicode.Mappings
             Dictionary<string, string> vattaksharagalu,
             Dictionary<string, string> asciiArkavattu,
             HashSet<string> dependentVowels,
-            HashSet<string> ignoreList)
+            HashSet<string> ignoreList,
+            Dictionary<string, string> reverseMapping)
         LoadMappings()
         {
             var json = ReadEmbeddedResource(ResourceName);
             var root = ParseJson(json);
 
+            var mapping = LoadDictionary(root, "mapping");
+            var reverseMapping = CreateReverseMapping(mapping);
+
             return (
-                LoadDictionary(root, "mapping"),
+                mapping,
                 LoadBrokenCases(root),
                 LoadDictionary(root, "vattaksharagalu"),
                 LoadDictionary(root, "asciiArkavattu"),
                 LoadHashSet(root, "dependentVowels"),
-                LoadHashSet(root, "ignoreList")
+                LoadHashSet(root, "ignoreList"),
+                reverseMapping
             );
         }
 
@@ -144,6 +149,32 @@ namespace Kannada.AsciiUnicode.Mappings
             }
 
             return result;
+        }
+
+        private static Dictionary<string, string> CreateReverseMapping(
+            Dictionary<string, string> forwardMapping)
+        {
+            var reverse = new Dictionary<string, string>();
+
+            // Sort by key length descending to prioritize longer ASCII sequences
+            var sortedMappings = forwardMapping
+                .OrderByDescending(kvp => kvp.Key.Length)
+                .ToList();
+
+            foreach (var kvp in sortedMappings)
+            {
+                var asciiKey = kvp.Key;
+                var unicodeValue = kvp.Value;
+
+                // For ambiguous cases (multiple ASCII → same Unicode),
+                // keep the longest/first ASCII sequence
+                if (!reverse.ContainsKey(unicodeValue))
+                {
+                    reverse[unicodeValue] = asciiKey;
+                }
+            }
+
+            return reverse;
         }
 
 

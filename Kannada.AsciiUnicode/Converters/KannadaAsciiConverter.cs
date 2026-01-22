@@ -16,6 +16,7 @@ public class KannadaAsciiConverter
     private readonly Dictionary<string, string> _asciiArkavattu;
     private readonly HashSet<string> _dependentVowels;
     private readonly HashSet<string> _ignoreList;
+    private readonly Dictionary<string, string> _reverseMapping;
 
     public class BrokenCaseInfo
     {
@@ -29,7 +30,8 @@ public class KannadaAsciiConverter
         Dictionary<string, string> vattaksharagalu,
         Dictionary<string, string> asciiArkavattu,
         HashSet<string> dependentVowels,
-        HashSet<string> ignoreList)
+        HashSet<string> ignoreList,
+        Dictionary<string, string> reverseMapping)
     {
         _mapping = mapping;
         _brokenCases = brokenCases;
@@ -37,6 +39,7 @@ public class KannadaAsciiConverter
         _asciiArkavattu = asciiArkavattu;
         _dependentVowels = dependentVowels;
         _ignoreList = ignoreList;
+        _reverseMapping = reverseMapping;
     }
 
     public string Convert(string text)
@@ -47,6 +50,19 @@ public class KannadaAsciiConverter
         foreach (var word in words)
         {
             processedWords.Add(ProcessWord(word));
+        }
+
+        return string.Join(" ", processedWords);
+    }
+
+    public string ReverseConvert(string unicodeText)
+    {
+        var words = unicodeText.Split(' ');
+        var processedWords = new List<string>();
+
+        foreach (var word in words)
+        {
+            processedWords.Add(ReverseProcessWord(word));
         }
 
         return string.Join(" ", processedWords);
@@ -221,9 +237,55 @@ public class KannadaAsciiConverter
         return letters;
     }
 
+    private string ReverseProcessWord(string word)
+    {
+        var result = new StringBuilder();
+        int i = 0;
 
+        while (i < word.Length)
+        {
+            // Try to match longest Unicode sequences first (greedy approach)
+            var charsMatched = 0;
+            var match = FindReverseMapping(word, i, out charsMatched);
 
+            if (!string.IsNullOrEmpty(match))
+            {
+                result.Append(match);
+                i += charsMatched;
+            }
+            else
+            {
+                // No mapping found, keep the character as-is
+                result.Append(word[i]);
+                i++;
+            }
+        }
 
+        return result.ToString();
+    }
+
+    private string FindReverseMapping(string unicodeText, int startPos, out int charsMatched)
+    {
+        charsMatched = 0;
+
+        // Try matching longest sequences first (up to 4 Unicode characters)
+        for (int len = 4; len >= 1; len--)
+        {
+            int endPos = startPos + len;
+            if (endPos > unicodeText.Length)
+                continue;
+
+            string substring = unicodeText.Substring(startPos, len);
+
+            if (_reverseMapping.TryGetValue(substring, out string? asciiValue))
+            {
+                charsMatched = len;
+                return asciiValue;
+            }
+        }
+
+        return string.Empty;
+    }
 
 }
 
