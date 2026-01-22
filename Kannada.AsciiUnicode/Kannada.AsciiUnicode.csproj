@@ -1,30 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>1591</NoWarn>
-    
-    <PackageId>Kannada.AsciiUnicode</PackageId>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>KannadaAsciiUnicodeSDK</PackageId>
     <Version>1.0.0</Version>
-    <Title>Kannada ASCII ↔ Unicode Converter</Title>
-    <Authors>Ravikumar Pawar</Authors>
+    <Title>Kannada ASCII ↔ Unicode Converter SDK</Title>
+    <Authors>Kannada Ganaka Parishat (KAGAPA)</Authors>
     <Company>Kagapa Software</Company>
-    <Description>High-performance Kannada Nudi/Baraha ASCII to Unicode SDK</Description>
-    <PackageTags>kannada;unicode;ascii;nudi;baraha;conversion</PackageTags>
+    <Description>High-performance Kannada Nudi/Baraha ASCII to Unicode SDK. Developed & maintained by Kannada Ganaka Parishat (KAGAPA).</Description>
+    <PackageTags>kannada;unicode;ascii;nudi;baraha;conversion;SDK</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/kagapa/KannadaAsciiUnicode</RepositoryUrl>
+    <RepositoryUrl>https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Include all JSON resources -->
     <EmbeddedResource Include="Resources\**\*.json" />
+    <!-- Include README in package -->
+    <None Include="README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Universal netstandard2.0 JSON parsing -->
+    <!-- Dependencies -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
+
 </Project>
