@@ -13,7 +13,11 @@
     <Title>Kannada ASCII ↔ Unicode Converter SDK</Title>
     <Authors>Kannada Ganaka Parishat (KAGAPA)</Authors>
     <Company>Kagapa Software</Company>
-    <Description>High-performance Kannada Nudi/Baraha ASCII to Unicode SDK. Developed and maintained by Kannada Ganaka Parishat (KAGAPA).</Description>
+    <Description>
+      High-performance Kannada Nudi/Baraha ASCII to Unicode SDK.
+      Developed and maintained by Kannada Ganaka Parishat (KAGAPA).
+    </Description>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <PackageTags>kannada;unicode;ascii;nudi;baraha;conversion;SDK</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK</RepositoryUrl>
