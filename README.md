@@ -1,143 +1,100 @@
 # KannadaAsciiUnicodeSDK
 
-High-performance Kannada ASCII/ANSI ↔ Unicode converter, developed and maintained by **KAGAPA**.
+High-performance Kannada ASCII/ANSI ↔ Unicode conversion toolkit, developed and maintained by **Kannada Ganaka Parishat (KAGAPA)**.
 
-This library allows bidirectional conversion between legacy Kannada ASCII encodings (like Nudi/Baraha) and Unicode.
-
----
-
-## Quick Start
-
-### Installation
-
-Clone or reference the `Kannada.AsciiUnicode` library in your project.
-
-### Basic Usage
-
-```csharp
-using Kannada.AsciiUnicode.Converters;
-
-var converter = KannadaConverter.Instance;
-
-// ASCII → Unicode
-string unicode = converter.ConvertAsciiToUnicode("PÀ£ÀßqÀ");
-// Output: "ಕನ್ನಡ"
-
-// Unicode → ASCII
-string ascii = converter.ConvertUnicodeToAscii("ಕನ್ನಡ");
-// Output: "PÀ£ï£ÀqÀ"
-```
-
-### Using Custom User Mappings
-
-Developers can provide **custom ASCII → Unicode or Unicode → ASCII mappings**:
-
-```csharp
-var customAsciiToUnicode = new Dictionary<string, string>
-{
-    { "wÃPÀëÚ", "ತೀಕ್ಷ್ಣ" },
-    { "PÀëÚ", "ಕ್ಷ್ಣ" },
-    { "UÉÀ", "ಗೆ" }
-};
-
-var customUnicodeToAscii = new Dictionary<string, string>
-{
-    { "ತೀಕ್ಷ್ಣ", "wÃPÀëÚ" },
-    { "ಕ್ಷ್ಣ", "PÀëÚ" }
-};
-
-var converter = KannadaConverter.CreateWithCustomMapping(
-    userAsciiToUnicodeMapping: customAsciiToUnicode,
-    userUnicodeToAsciiMapping: customUnicodeToAscii
-);
-
-string unicodeText = converter.ConvertAsciiToUnicode("wÃPÀëÚ PÀëÚ");
-string asciiText = converter.ConvertUnicodeToAscii("ತೀಕ್ಷ್ಣ ಕ್ಷ್ಣ");
-```
-
-This enables developers to **extend the default mapping** for rare or custom words.
+This repository hosts the **KannadaAsciiUnicode SDK**, a robust and optimized solution for converting legacy Kannada ASCII encodings (such as **Nudi** and **Baraha**) to modern **Unicode**, and vice versa.
 
 ---
 
-## Features
+## 📦 Repository Structure
 
-* ✅ Bidirectional conversion (ASCII ↔ Unicode)
-* ✅ Handles consonant clusters and conjuncts
-* ✅ Correct placement of vowel signs
-* ✅ Supports custom user mappings
-* ✅ Optimized for performance, zero external dependencies
-* ✅ Robust handling of common conversion errors
+This solution contains the following projects:
 
----
+- **Kannada.AsciiUnicode**  
+  Core SDK library published as a NuGet package.
 
-## Public API
+- **Kannada.AsciiUnicode.Tests**  
+  Unit tests validating conversion accuracy and edge cases.
 
-### KannadaConverter (Singleton)
-
-```csharp
-public class KannadaConverter : IAsciiUnicodeConverter
-{
-    public static KannadaConverter Instance { get; }
-
-    public string ConvertAsciiToUnicode(string asciiText);
-
-    public string ConvertUnicodeToAscii(string unicodeText);
-
-    public string Convert(string text, KannadaAsciiFormat format);
-
-    public static KannadaConverter CreateWithCustomMapping(
-        Dictionary<string, string>? userAsciiToUnicodeMapping = null,
-        Dictionary<string, string>? userUnicodeToAsciiMapping = null
-    );
-}
-```
+- **KannadaAsciiUnicode.TestApp**  
+  Console application demonstrating real-world usage.
 
 ---
 
-## Developer Contribution
+## 🚀 Kannada.AsciiUnicode SDK
 
-KAGAPA encourages developers to contribute:
+The **Kannada.AsciiUnicode** project is the primary SDK and includes:
 
-### Areas to Contribute
+- Bidirectional conversion (ASCII ↔ Unicode)
+- Correct handling of Kannada conjuncts and vowel signs
+- Optimized conversion logic
+- Support for user-defined custom mappings
 
-* 📝 Add more ASCII → Unicode mappings for rare characters
-* ⚡ Optimize conversion performance
-* 🧪 Add test cases for edge scenarios
-* 📖 Improve documentation
-* 🐛 Report bugs and suggest fixes
+### 📘 SDK Documentation
 
-### How to Contribute
+All SDK-specific documentation, including installation, usage examples, public API, and custom mapping support, is maintained here:
 
-1. Fork the repository
-2. Add/update mappings or modify conversion logic
-3. Test thoroughly using `KannadaAsciiUnicode.TestApp`
-4. Submit a pull request
+Kannada.AsciiUnicode/README.md
+
+Please refer to that document for detailed developer guidance.
 
 ---
 
-## Testing & Example Usage
+## 📦 NuGet Package
 
-```bash
-# Build the solution
+The SDK is available on NuGet as:
+
+KannadaAsciiUnicodeSDK
+
+Install via the .NET CLI:
+
+dotnet add package KannadaAsciiUnicodeSDK
+
+Package links:
+
+- NuGet: https://www.nuget.org/packages/KannadaAsciiUnicodeSDK
+- Releases: https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases
+
+---
+
+## 🧪 Build and Test
+
+To build the solution:
+
 dotnet build
 
-# Run the test app
-cd KannadaAsciiUnicode.TestApp
+To run the sample test application:
+
+cd KannadaAsciiUnicode.TestApp  
 dotnet run
 
-# Check conversion results in output/conversion_results.txt
-```
+---
+
+## 🤝 Contributions
+
+Contributions are welcome and encouraged by KAGAPA.
+
+You can contribute by:
+
+- Adding new ASCII ↔ Unicode mappings
+- Improving performance
+- Adding test coverage
+- Enhancing documentation
+
+Please follow the contribution guidelines described in:
+
+Kannada.AsciiUnicode/README.md
 
 ---
 
-## License
+## 📄 License
 
 MIT License
-Developed and maintained by **KAGAPA**
+
+Developed and maintained by **Kannada Ganaka Parishat (KAGAPA)**
 
 ---
 
-## Releases
+## 🌐 About KAGAPA
 
-Latest releases and NuGet packages are available at:
-[https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases](https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases)
+Kannada Ganaka Parishat (KAGAPA) is dedicated to promoting Kannada computing, language tools, and open-source software that support the Kannada language ecosystem.

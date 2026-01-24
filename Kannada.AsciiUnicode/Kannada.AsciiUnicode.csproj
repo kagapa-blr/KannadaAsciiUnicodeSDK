@@ -1,43 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>1591</NoWarn>
-
     <!-- NuGet Package Metadata -->
     <PackageId>KannadaAsciiUnicodeSDK</PackageId>
     <Title>Kannada ASCII to Unicode Converter SDK</Title>
     <Authors>Kannada Ganaka Parishat (KAGAPA)</Authors>
+    <PackageReleaseNotes>Updated user documents and Readme File</PackageReleaseNotes>
     <Company>Kagapa Software</Company>
-    <Description>
-      High-performance Kannada Nudi/Baraha ASCII to Unicode SDK.
-      Developed and maintained by Kannada Ganaka Parishat (KAGAPA).
-    </Description>
+    <Description>High-performance Kannada Nudi/Baraha ASCII to Unicode SDK. Developed and maintained by Kannada Ganaka Parishat (KAGAPA). Updated user documents and Readme File</Description>
     <PackageTags>kannada;unicode;ascii;nudi;baraha;conversion;sdk</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK</RepositoryUrl>
-
     <!-- Version comes ONLY from CI -->
-    <Version>$(PackageVersion)</Version>
-
+       <Version>$(PackageVersion)</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-
   <ItemGroup>
     <!-- Embed JSON resources -->
     <EmbeddedResource Include="Resources\**\*.json" />
-
     <!-- Include README in NuGet package -->
     <None Include="README.md" Pack="true" PackagePath="" />
   </ItemGroup>
-
   <ItemGroup>
     <!-- Dependencies -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
-
 </Project>
