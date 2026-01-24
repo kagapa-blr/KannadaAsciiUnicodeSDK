@@ -7,7 +7,7 @@
     <NoWarn>1591</NoWarn>
     <!-- NuGet Package Metadata -->
     <PackageId>KannadaAsciiUnicodeSDK</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.0.4</Version>
     <Title>Kannada ASCII to Unicode Converter SDK</Title>
     <Authors>Kannada Ganaka Parishat (KAGAPA)</Authors>
     <Company>Kagapa Software</Company>
