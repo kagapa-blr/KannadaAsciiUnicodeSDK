@@ -39,10 +39,8 @@ jobs:
         run: dotnet build KannadaAsciiUnicode.sln --configuration Release --no-restore
 
       - name: Run Tests
-        run: dotnet test Kannada.AsciiUnicode.Tests/Kannada.AsciiUnicode.Tests.csproj \
-            --configuration Release \
-            --no-build \
-            --verbosity normal
+        run: dotnet test Kannada.AsciiUnicode.Tests/Kannada.AsciiUnicode.Tests.csproj --configuration Release --no-build --verbosity normal
+
 
       - name: Determine Next Version
         id: set_version
