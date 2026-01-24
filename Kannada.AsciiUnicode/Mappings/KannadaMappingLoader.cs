@@ -151,7 +151,7 @@ namespace Kannada.AsciiUnicode.Mappings
             return result;
         }
 
-        private static Dictionary<string, string> CreateReverseMapping(
+        internal static Dictionary<string, string> CreateReverseMapping(
             Dictionary<string, string> forwardMapping)
         {
             var reverse = new Dictionary<string, string>();
