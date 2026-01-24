@@ -1,6 +1,8 @@
-# Kannada ASCII ↔ Unicode Converter SDK
+# KannadaAsciiUnicodeSDK
 
-High-performance **Kannada ASCII/ANSI ↔ Unicode converter** following **KAGAPA style**. Supports accurate handling of **consonant clusters, vowel signs, repha, vattaksharagalu, arkavattu**, and **custom mappings**.
+High-performance Kannada ASCII/ANSI ↔ Unicode converter, developed and maintained by **KAGAPA**.
+
+This library allows bidirectional conversion between legacy Kannada ASCII encodings (like Nudi/Baraha) and Unicode.
 
 ---
 
@@ -8,22 +10,7 @@ High-performance **Kannada ASCII/ANSI ↔ Unicode converter** following **KAGAPA
 
 ### Installation
 
-Clone the repository or reference the **Kannada.AsciiUnicode** library in your project.
-
-```bash
-git clone https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK.git
-cd KannadaAsciiUnicodeSDK
-```
-
-Add a project reference in your .NET solution:
-
-```xml
-<PackageReference Include="KannadaAsciiUnicodeSDK" Version="x.y.z" />
-```
-
-> **Note:** Version `x.y.z` will be determined automatically from [GitHub Releases](https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases).
-
----
+Clone or reference the `Kannada.AsciiUnicode` library in your project.
 
 ### Basic Usage
 
@@ -38,51 +25,37 @@ string unicode = converter.ConvertAsciiToUnicode("PÀ£ÀßqÀ");
 
 // Unicode → ASCII
 string ascii = converter.ConvertUnicodeToAscii("ಕನ್ನಡ");
-// Output: "PÀ£ï£ÀqÀ" (may vary depending on normalization)
+// Output: "PÀ£ï£ÀqÀ"
 ```
 
----
+### Using Custom User Mappings
 
-### File Processing Example
+Developers can provide **custom ASCII → Unicode or Unicode → ASCII mappings**:
 
 ```csharp
-var converter = KannadaConverter.Instance;
-
-string asciiContent = File.ReadAllText("input.txt", Encoding.UTF8);
-string unicodeContent = converter.ConvertAsciiToUnicode(asciiContent);
-File.WriteAllText("output.txt", unicodeContent, Encoding.UTF8);
-```
-
----
-
-## Public API
-
-| Method                                            | Description                                                         |
-| ------------------------------------------------- | ------------------------------------------------------------------- |
-| `ConvertAsciiToUnicode(string asciiText)`         | Converts ASCII (Nudi/Baraha) text to Unicode.                       |
-| `ConvertUnicodeToAscii(string unicodeText)`       | Converts Unicode text back to ASCII.                                |
-| `Convert(string text, KannadaAsciiFormat format)` | Converts with explicit format (ASCII → Unicode or Unicode → ASCII). |
-| `Instance`                                        | Access singleton instance for conversion.                           |
-
----
-
-## Custom Mappings
-
-Extend or override mappings with **custom JSON resources**:
-
-* Location: `Kannada.AsciiUnicode/Resources/CustomMappings.json`
-* Supports additional ASCII → Unicode rules.
-* Loaded automatically at runtime.
-
-```json
+var customAsciiToUnicode = new Dictionary<string, string>
 {
-  "aa": "ಆ",
-  "sh": "ಶ",
-  "k~": "ಕ್ಷ"
-}
+    { "wÃPÀëÚ", "ತೀಕ್ಷ್ಣ" },
+    { "PÀëÚ", "ಕ್ಷ್ಣ" },
+    { "UÉÀ", "ಗೆ" }
+};
+
+var customUnicodeToAscii = new Dictionary<string, string>
+{
+    { "ತೀಕ್ಷ್ಣ", "wÃPÀëÚ" },
+    { "ಕ್ಷ್ಣ", "PÀëÚ" }
+};
+
+var converter = KannadaConverter.CreateWithCustomMapping(
+    userAsciiToUnicodeMapping: customAsciiToUnicode,
+    userUnicodeToAsciiMapping: customUnicodeToAscii
+);
+
+string unicodeText = converter.ConvertAsciiToUnicode("wÃPÀëÚ PÀëÚ");
+string asciiText = converter.ConvertUnicodeToAscii("ತೀಕ್ಷ್ಣ ಕ್ಷ್ಣ");
 ```
 
-> Custom mappings are applied after standard mappings but before post-fixups for flexibility.
+This enables developers to **extend the default mapping** for rare or custom words.
 
 ---
 
@@ -90,131 +63,81 @@ Extend or override mappings with **custom JSON resources**:
 
 * ✅ Bidirectional conversion (ASCII ↔ Unicode)
 * ✅ Handles consonant clusters and conjuncts
-* ✅ Correct vowel sign placement
-* ✅ Supports KAGAPA style
-* ✅ Custom mapping support
-* ✅ Zero external dependencies
+* ✅ Correct placement of vowel signs
+* ✅ Supports custom user mappings
+* ✅ Optimized for performance, zero external dependencies
+* ✅ Robust handling of common conversion errors
 
 ---
 
-## Project Structure
+## Public API
 
-```
-Kannada.AsciiUnicode/
-├── Converters/
-│   ├── KannadaConverter.cs        ← Public API (Singleton)
-│   └── KannadaAsciiConverter.cs   ← Core engine
-├── Mappings/
-│   ├── KannadaMappingLoader.cs    ← Loads JSON mappings
-│   ├── NudiBarahaMapping.json     ← Standard ASCII→Unicode mappings
-│   └── CustomMappings.json        ← Optional user mappings
-├── Resources/                     ← Embedded JSON resources
-└── Interfaces/
-KannadaAsciiUnicode.TestApp/
-└── Program.cs                      ← Example usage & tests
+### KannadaConverter (Singleton)
+
+```csharp
+public class KannadaConverter : IAsciiUnicodeConverter
+{
+    public static KannadaConverter Instance { get; }
+
+    public string ConvertAsciiToUnicode(string asciiText);
+
+    public string ConvertUnicodeToAscii(string unicodeText);
+
+    public string Convert(string text, KannadaAsciiFormat format);
+
+    public static KannadaConverter CreateWithCustomMapping(
+        Dictionary<string, string>? userAsciiToUnicodeMapping = null,
+        Dictionary<string, string>? userUnicodeToAsciiMapping = null
+    );
+}
 ```
 
 ---
 
-## Contributing
+## Developer Contribution
 
-### Prerequisites
+KAGAPA encourages developers to contribute:
 
-* Visual Studio 2022 / VS Code
-* .NET SDK (supports .NET Standard 2.0+)
+### Areas to Contribute
 
-### Getting Started
-
-```bash
-git clone https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK.git
-cd KannadaAsciiUnicodeSDK
-```
-
-```bash
-dotnet build
-```
-
-Run the test application:
-
-```bash
-cd KannadaAsciiUnicode.TestApp
-dotnet run
-```
-
-> Output results are saved to `output/results.txt`.
+* 📝 Add more ASCII → Unicode mappings for rare characters
+* ⚡ Optimize conversion performance
+* 🧪 Add test cases for edge scenarios
+* 📖 Improve documentation
+* 🐛 Report bugs and suggest fixes
 
 ### How to Contribute
 
-#### Adding New Mappings
-
-1. Edit `Resources/NudiBarahaMapping.json` or `Resources/CustomMappings.json`
-2. Add ASCII → Unicode entries
-3. Run `dotnet run` in `TestApp` to verify correctness
-4. Submit a Pull Request
-
-#### Improving Conversion Logic
-
-1. Modify `KannadaAsciiConverter.cs`
-2. Add test cases in `TestApp/Program.cs`
-3. Run and verify conversions
-4. Document your changes
-
-#### Reporting Issues
-
-* Provide input text (ASCII/Unicode)
-* Include expected vs actual output
-* Attach test cases
+1. Fork the repository
+2. Add/update mappings or modify conversion logic
+3. Test thoroughly using `KannadaAsciiUnicode.TestApp`
+4. Submit a pull request
 
 ---
 
-## Features & Accuracy
-
-| Feature               | Status | Accuracy |
-| --------------------- | ------ | -------- |
-| Basic ASCII→Unicode   | ✅      | 95%+     |
-| Consonant Clusters    | ✅      | 85%+     |
-| Vowel Signs           | ✅      | 90%+     |
-| Complex/Extended Text | ✅      | 70%+     |
-
-> Accuracy improves with **custom mappings** and KAGAPA-style post-processing.
-
----
-
-## Build & Test
+## Testing & Example Usage
 
 ```bash
-# Build full solution
+# Build the solution
 dotnet build
 
-# Run test application
+# Run the test app
 cd KannadaAsciiUnicode.TestApp
 dotnet run
 
-# View results
-cat output/results.txt
+# Check conversion results in output/conversion_results.txt
 ```
 
 ---
 
 ## License
 
-[MIT License](LICENSE)
-
----
-
-## Contact & Support
-
-* GitHub Issues: [Create an Issue](https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/issues)
-* Questions & Contributions: Open Pull Requests
-* Maintained by **Kannada Ganaka Parishat (KAGAPA)**
+MIT License
+Developed and maintained by **KAGAPA**
 
 ---
 
 ## Releases
 
-All published NuGet packages and versioned releases are available at:
-
-* [GitHub Releases](https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases)
-* [NuGet.org](https://www.nuget.org/packages/KannadaAsciiUnicodeSDK)
-
-> Versioning is automatically handled via CI/CD. GitHub tags match the NuGet package version.
+Latest releases and NuGet packages are available at:
+[https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases](https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases)
