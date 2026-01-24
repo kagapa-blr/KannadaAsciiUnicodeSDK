@@ -111,18 +111,18 @@ jobs:
       - name: Update csproj
         shell: pwsh
         run: |
-          Write-Host "Updating csproj with version ${{ env.NEW_VERSION }}..."
+          Write-Host "Updating csproj with version ${{ steps.set_version.outputs.NEW_VERSION }}..."
           $ProjectPath = "Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj"
           if (-not (Test-Path $ProjectPath)) { throw "Project file not found: $ProjectPath" }
 
           [xml]$csproj = Get-Content $ProjectPath
           $propertyGroup = $csproj.Project.PropertyGroup | Where-Object { $_.Version }
           if (-not $propertyGroup) { throw "<Version> element not found in csproj" }
-          $propertyGroup.Version = "${{ env.NEW_VERSION }}"
+          $propertyGroup.Version = "${{ steps.set_version.outputs.NEW_VERSION }}"
 
           $releaseNode = $csproj.SelectSingleNode("//Project/PropertyGroup/PackageReleaseNotes")
           if (-not $releaseNode) { throw "<PackageReleaseNotes> element not found in csproj" }
-          $releaseNode.InnerText = "${{ env.RELEASE_NOTES }}"
+          $releaseNode.InnerText = "${{ steps.set_release_notes.outputs.RELEASE_NOTES }}"
 
           $csproj.Save($ProjectPath)
           Write-Host "csproj updated successfully"
@@ -134,7 +134,7 @@ jobs:
         run: |
           echo "Packing NuGet package..."
           dotnet pack Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj --configuration Release --no-build --output ./nupkg
-          if [ ! -f ./nupkg/KannadaAsciiUnicodeSDK.${{ env.NEW_VERSION }}.nupkg ]; then
+          if [ ! -f ./nupkg/KannadaAsciiUnicodeSDK.${{ steps.set_version.outputs.NEW_VERSION }}.nupkg ]; then
             echo "Error: NuGet package not found!" && exit 1
           fi
 
@@ -207,9 +207,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${NEW_VERSION}"
+          tag_name: "v${{ needs.build-test-pack.outputs.NEW_VERSION }}"
           files: ./nupkg/*.nupkg
-          name: KannadaAsciiUnicodeSDK v${NEW_VERSION}
-          body: ${{ env.RELEASE_NOTES }}
+          name: KannadaAsciiUnicodeSDK v${{ needs.build-test-pack.outputs.NEW_VERSION }}
+          body: ${{ needs.build-test-pack.outputs.RELEASE_NOTES }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
