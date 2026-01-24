@@ -25,20 +25,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore KannadaAsciiUnicode.sln
 
       - name: Build
         run: dotnet build KannadaAsciiUnicode.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Kannada.AsciiUnicode.Tests/Kannada.AsciiUnicode.Tests.csproj \
-          --configuration Release --no-build
+        run: dotnet test KannadaAsciiUnicode.sln --configuration Release --no-build
 
       - name: Determine Next Version
         id: version
@@ -84,7 +83,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
@@ -93,8 +92,7 @@ jobs:
         run: dotnet restore Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj
 
       - name: Build
-        run: dotnet build Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj \
-          --configuration Release --no-restore
+        run: dotnet build Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj --configuration Release --no-restore
 
       - name: Pack
         run: |
