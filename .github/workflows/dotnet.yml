@@ -17,7 +17,6 @@ jobs:
     name: Build & Test SDK
     runs-on: ubuntu-latest
     outputs:
-      BUILD_SUCCESS: ${{ steps.build.outcome }}
       NEW_VERSION: ${{ steps.set_version.outputs.NEW_VERSION }}
       RELEASE_NOTES: ${{ steps.set_release_notes.outputs.RELEASE_NOTES }}
     steps:
@@ -34,13 +33,12 @@ jobs:
       - name: Restore NuGet Packages
         run: dotnet restore
 
-      - name: Build Project
-        id: build
-        run: dotnet build KannadaAsciiUnicode.sln --configuration Release --no-restore
+      - name: Build Solution
+        run: dotnet build KannadaAsciiUnicode.sln --configuration Release
 
       - name: Run Tests
-        run: dotnet test Kannada.AsciiUnicode.Tests/Kannada.AsciiUnicode.Tests.csproj --configuration Release --no-build --verbosity normal
-
+        run: dotnet test Kannada.AsciiUnicode.Tests/Kannada.AsciiUnicode.Tests.csproj \
+              --configuration Release --no-build --verbosity normal
 
       - name: Determine Next Version
         id: set_version
@@ -70,6 +68,7 @@ jobs:
           else
             RELEASE_NOTES=$(git log $LAST_TAG..HEAD --pretty=format:"%s")
           fi
+          # Write release notes safely
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_NOTES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -104,10 +103,10 @@ jobs:
 
       - name: Pack NuGet Package
         run: |
-          dotnet pack Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj \
+          dotnet pack KannadaAsciiUnicode.sln \
             --configuration Release \
-            --no-build \
-            --output ./nupkg
+            --output ./nupkg \
+            /p:PackageVersion=${{ needs.build-test.outputs.NEW_VERSION }}
           ls ./nupkg
 
       - name: Upload NuGet Artifact
