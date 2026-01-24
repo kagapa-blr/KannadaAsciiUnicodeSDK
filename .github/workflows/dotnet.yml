@@ -7,22 +7,27 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: write
+  contents: write  # Needed to push tags and create releases
 
 jobs:
+  # =========================================================
+  # 1️⃣ Build, Test, Pack SDK
+  # =========================================================
   build-test-pack:
     name: Build, Test & Pack SDK
     runs-on: ubuntu-latest
+    outputs:
+      NEW_VERSION: ${{ steps.set_version.outputs.NEW_VERSION }}
+      RELEASE_NOTES: ${{ steps.set_release_notes.outputs.RELEASE_NOTES }}
 
     steps:
       # -------------------------------
-      # 1️⃣ Checkout & Setup
+      # Step 1: Checkout & Setup
       # -------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-        continue-on-error: false
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -33,37 +38,34 @@ jobs:
         run: dotnet --info
 
       # -------------------------------
-      # 2️⃣ Restore Dependencies
+      # Step 2: Restore Dependencies
       # -------------------------------
       - name: Restore NuGet Packages
         run: |
           echo "Restoring dependencies..."
           dotnet restore
-        shell: bash
 
       # -------------------------------
-      # 3️⃣ Build Project
+      # Step 3: Build Project
       # -------------------------------
       - name: Build Project
         run: |
           echo "Building project..."
           dotnet build --configuration Release --no-restore
-        shell: bash
 
       # -------------------------------
-      # 4️⃣ Run Tests
+      # Step 4: Run Tests
       # -------------------------------
       - name: Run Tests
         run: |
           echo "Running tests..."
           dotnet test --configuration Release --no-build --verbosity normal
-        shell: bash
 
       # -------------------------------
-      # 5️⃣ Determine Next Version from NuGet
+      # Step 5: Determine Next Version
       # -------------------------------
       - name: Determine Next Version
-        id: get_version
+        id: set_version
         shell: bash
         run: |
           echo "Determining next version..."
@@ -72,7 +74,6 @@ jobs:
 
           set -e
           if ! curl --fail -s $INDEX_URL > /dev/null; then
-            echo "No previous versions found. Starting at 1.0.0"
             NEW_VERSION="1.0.0"
           else
             LATEST_VERSION=$(curl -s $INDEX_URL | jq -r '.versions[-1]')
@@ -83,12 +84,13 @@ jobs:
 
           echo "Next version determined: $NEW_VERSION"
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       # -------------------------------
-      # 6️⃣ Generate Release Notes from Commits
+      # Step 6: Generate Release Notes
       # -------------------------------
       - name: Generate Release Notes
-        id: release_notes
+        id: set_release_notes
         shell: bash
         run: |
           echo "Generating release notes from commits..."
@@ -101,20 +103,19 @@ jobs:
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_NOTES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-          echo "Release notes generated successfully"
+          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_OUTPUT
 
       # -------------------------------
-      # 7️⃣ Update csproj for Version & Release Notes
+      # Step 7: Update csproj for Version & Release Notes
       # -------------------------------
       - name: Update csproj
         shell: pwsh
         run: |
-          Write-Host "Updating csproj with new version and release notes..."
+          Write-Host "Updating csproj with version ${{ env.NEW_VERSION }}..."
           $ProjectPath = "Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj"
           if (-not (Test-Path $ProjectPath)) { throw "Project file not found: $ProjectPath" }
 
           [xml]$csproj = Get-Content $ProjectPath
-
           $propertyGroup = $csproj.Project.PropertyGroup | Where-Object { $_.Version }
           if (-not $propertyGroup) { throw "<Version> element not found in csproj" }
           $propertyGroup.Version = "${{ env.NEW_VERSION }}"
@@ -127,7 +128,7 @@ jobs:
           Write-Host "csproj updated successfully"
 
       # -------------------------------
-      # 8️⃣ Pack NuGet Package
+      # Step 8: Pack NuGet Package
       # -------------------------------
       - name: Pack NuGet Package
         run: |
@@ -138,7 +139,7 @@ jobs:
           fi
 
       # -------------------------------
-      # 9️⃣ Upload Package Artifact
+      # Step 9: Upload Package Artifact
       # -------------------------------
       - name: Upload NuGet Artifact
         uses: actions/upload-artifact@v4
@@ -146,37 +147,50 @@ jobs:
           name: nupkg
           path: ./nupkg/*.nupkg
 
+  # =========================================================
+  # 2️⃣ Release Job: Publish & GitHub Release
+  # =========================================================
   release:
     name: Publish & Create GitHub Release
     runs-on: ubuntu-latest
     needs: build-test-pack
+    env:
+      NEW_VERSION: ${{ needs.build-test-pack.outputs.NEW_VERSION }}
+      RELEASE_NOTES: ${{ needs.build-test-pack.outputs.RELEASE_NOTES }}
 
     steps:
+      # -------------------------------
+      # Step 1: Checkout Repository
+      # -------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # -------------------------------
+      # Step 2: Download NuGet Artifact
+      # -------------------------------
       - name: Download NuGet Artifact
         uses: actions/download-artifact@v4
         with:
           name: nupkg
+          path: ./nupkg
 
       # -------------------------------
-      # 1️⃣ Tag the Release
+      # Step 3: Tag the Release
       # -------------------------------
       - name: Tag Release
         shell: bash
         run: |
-          echo "Creating Git tag v${{ env.NEW_VERSION }}..."
+          echo "Creating Git tag v${NEW_VERSION}..."
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ env.NEW_VERSION }}"
-          git push origin "v${{ env.NEW_VERSION }}"
+          git tag "v${NEW_VERSION}"
+          git push origin "v${NEW_VERSION}"
           echo "Git tag pushed successfully"
 
       # -------------------------------
-      # 2️⃣ Publish to NuGet
+      # Step 4: Publish to NuGet
       # -------------------------------
       - name: Publish to NuGet
         run: |
@@ -188,14 +202,14 @@ jobs:
           echo "NuGet publish completed successfully"
 
       # -------------------------------
-      # 3️⃣ Create GitHub Release
+      # Step 5: Create GitHub Release
       # -------------------------------
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ env.NEW_VERSION }}"
+          tag_name: "v${NEW_VERSION}"
           files: ./nupkg/*.nupkg
-          name: KannadaAsciiUnicodeSDK v${{ env.NEW_VERSION }}
+          name: KannadaAsciiUnicodeSDK v${NEW_VERSION}
           body: ${{ env.RELEASE_NOTES }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
