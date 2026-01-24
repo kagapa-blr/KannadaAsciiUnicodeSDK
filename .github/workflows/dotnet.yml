@@ -1,4 +1,4 @@
-name: Build, Test, Package, Publish & Release KannadaAsciiUnicodeSDK
+name: Build, Test, Pack & Publish KannadaAsciiUnicodeSDK
 
 on:
   push:
@@ -7,19 +7,22 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: write  # Needed to push tags and create releases
+  contents: write
 
 jobs:
   build-test-pack:
-    name: Build and Pack SDK
+    name: Build, Test & Pack SDK
     runs-on: ubuntu-latest
 
     steps:
       # -------------------------------
-      # PHASE 1: Setup
+      # 1️⃣ Checkout & Setup
       # -------------------------------
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        continue-on-error: false
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -30,110 +33,169 @@ jobs:
         run: dotnet --info
 
       # -------------------------------
-      # PHASE 2: Restore
+      # 2️⃣ Restore Dependencies
       # -------------------------------
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore NuGet Packages
+        run: |
+          echo "Restoring dependencies..."
+          dotnet restore
+        shell: bash
 
       # -------------------------------
-      # PHASE 3: Build
+      # 3️⃣ Build Project
       # -------------------------------
-      - name: Build project
-        run: dotnet build --configuration Release --no-restore
+      - name: Build Project
+        run: |
+          echo "Building project..."
+          dotnet build --configuration Release --no-restore
+        shell: bash
 
       # -------------------------------
-      # PHASE 4: Test
+      # 4️⃣ Run Tests
       # -------------------------------
-      - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+      - name: Run Tests
+        run: |
+          echo "Running tests..."
+          dotnet test --configuration Release --no-build --verbosity normal
+        shell: bash
 
       # -------------------------------
-      # PHASE 5: Pack NuGet package
+      # 5️⃣ Determine Next Version from NuGet
       # -------------------------------
-      - name: Pack NuGet package
-        run: dotnet pack --configuration Release --no-build --output ./nupkg
+      - name: Determine Next Version
+        id: get_version
+        shell: bash
+        run: |
+          echo "Determining next version..."
+          PACKAGE_ID="KannadaAsciiUnicodeSDK"
+          INDEX_URL="https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID,,}/index.json"
+
+          set -e
+          if ! curl --fail -s $INDEX_URL > /dev/null; then
+            echo "No previous versions found. Starting at 1.0.0"
+            NEW_VERSION="1.0.0"
+          else
+            LATEST_VERSION=$(curl -s $INDEX_URL | jq -r '.versions[-1]')
+            IFS='.' read -r MAJOR MINOR PATCH <<< "${LATEST_VERSION}"
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+
+          echo "Next version determined: $NEW_VERSION"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
       # -------------------------------
-      # PHASE 6: Upload artifact for release
+      # 6️⃣ Generate Release Notes from Commits
       # -------------------------------
-      - name: Upload NuGet package artifact
+      - name: Generate Release Notes
+        id: release_notes
+        shell: bash
+        run: |
+          echo "Generating release notes from commits..."
+          LAST_TAG=$(git describe --tags --abbrev=0 || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            RELEASE_NOTES=$(git log --pretty=format:"%s" -n 20)
+          else
+            RELEASE_NOTES=$(git log $LAST_TAG..HEAD --pretty=format:"%s")
+          fi
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "Release notes generated successfully"
+
+      # -------------------------------
+      # 7️⃣ Update csproj for Version & Release Notes
+      # -------------------------------
+      - name: Update csproj
+        shell: pwsh
+        run: |
+          Write-Host "Updating csproj with new version and release notes..."
+          $ProjectPath = "Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj"
+          if (-not (Test-Path $ProjectPath)) { throw "Project file not found: $ProjectPath" }
+
+          [xml]$csproj = Get-Content $ProjectPath
+
+          $propertyGroup = $csproj.Project.PropertyGroup | Where-Object { $_.Version }
+          if (-not $propertyGroup) { throw "<Version> element not found in csproj" }
+          $propertyGroup.Version = "${{ env.NEW_VERSION }}"
+
+          $releaseNode = $csproj.SelectSingleNode("//Project/PropertyGroup/PackageReleaseNotes")
+          if (-not $releaseNode) { throw "<PackageReleaseNotes> element not found in csproj" }
+          $releaseNode.InnerText = "${{ env.RELEASE_NOTES }}"
+
+          $csproj.Save($ProjectPath)
+          Write-Host "csproj updated successfully"
+
+      # -------------------------------
+      # 8️⃣ Pack NuGet Package
+      # -------------------------------
+      - name: Pack NuGet Package
+        run: |
+          echo "Packing NuGet package..."
+          dotnet pack Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj --configuration Release --no-build --output ./nupkg
+          if [ ! -f ./nupkg/KannadaAsciiUnicodeSDK.${{ env.NEW_VERSION }}.nupkg ]; then
+            echo "Error: NuGet package not found!" && exit 1
+          fi
+
+      # -------------------------------
+      # 9️⃣ Upload Package Artifact
+      # -------------------------------
+      - name: Upload NuGet Artifact
         uses: actions/upload-artifact@v4
         with:
           name: nupkg
           path: ./nupkg/*.nupkg
 
   release:
-    name: Versioning, Publish & GitHub Release
+    name: Publish & Create GitHub Release
     runs-on: ubuntu-latest
     needs: build-test-pack
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download NuGet package artifact
+      - name: Download NuGet Artifact
         uses: actions/download-artifact@v4
         with:
           name: nupkg
 
       # -------------------------------
-      # PHASE 1: Determine next version
+      # 1️⃣ Tag the Release
       # -------------------------------
-      - name: Determine next version
-        id: get_version
+      - name: Tag Release
         shell: bash
         run: |
-          git fetch --tags
-          LATEST_TAG=$(git tag -l "v*" --sort=-v:refname | head -n1)
-          if [ -z "$LATEST_TAG" ]; then
-            NEW_VERSION="v1.0.0"
-          else
-            IFS='.' read -r MAJOR MINOR PATCH <<< "${LATEST_TAG#v}"
-            PATCH=$((PATCH + 1))
-            NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
-          fi
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "Next version: $NEW_VERSION"
-
-      # -------------------------------
-      # PHASE 2: Create & push new tag
-      # -------------------------------
-      - name: Create and push tag
-        run: |
+          echo "Creating Git tag v${{ env.NEW_VERSION }}..."
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ env.NEW_VERSION }}
-          git push origin ${{ env.NEW_VERSION }}
-
-      - name: Wait for tag push
-        run: git fetch --tags
+          git tag "v${{ env.NEW_VERSION }}"
+          git push origin "v${{ env.NEW_VERSION }}"
+          echo "Git tag pushed successfully"
 
       # -------------------------------
-      # PHASE 3: Publish NuGet package
+      # 2️⃣ Publish to NuGet
       # -------------------------------
       - name: Publish to NuGet
         run: |
+          echo "Publishing to NuGet..."
           dotnet nuget push ./nupkg/*.nupkg \
             --api-key ${{ secrets.NUGET_API_KEY_FOR_PUBLISH }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
+          echo "NuGet publish completed successfully"
 
       # -------------------------------
-      # PHASE 4: Create GitHub Release
+      # 3️⃣ Create GitHub Release
       # -------------------------------
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.NEW_VERSION }}
+          tag_name: "v${{ env.NEW_VERSION }}"
           files: ./nupkg/*.nupkg
-          name: KannadaAsciiUnicodeSDK ${{ env.NEW_VERSION }}
-          body: |
-            KannadaAsciiUnicodeSDK ${{ env.NEW_VERSION }}
-
-            - NuGet package published
-            - Build & tests passed
-            - Ready for production use
+          name: KannadaAsciiUnicodeSDK v${{ env.NEW_VERSION }}
+          body: ${{ env.RELEASE_NOTES }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
