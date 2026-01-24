@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   # =========================================================
-  # 1️⃣ Build, Test, Pack SDK
+  # 1️⃣ Build, Test & Pack SDK
   # =========================================================
   build-test-pack:
     name: Build, Test & Pack SDK
@@ -41,25 +41,19 @@ jobs:
       # Step 2: Restore Dependencies
       # -------------------------------
       - name: Restore NuGet Packages
-        run: |
-          echo "Restoring dependencies..."
-          dotnet restore
+        run: dotnet restore
 
       # -------------------------------
       # Step 3: Build Project
       # -------------------------------
       - name: Build Project
-        run: |
-          echo "Building project..."
-          dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore
 
       # -------------------------------
       # Step 4: Run Tests
       # -------------------------------
       - name: Run Tests
-        run: |
-          echo "Running tests..."
-          dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --no-build --verbosity normal
 
       # -------------------------------
       # Step 5: Determine Next Version
@@ -100,10 +94,17 @@ jobs:
           else
             RELEASE_NOTES=$(git log $LAST_TAG..HEAD --pretty=format:"%s")
           fi
+
+          # Write release notes safely to GITHUB_ENV and outputs
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_NOTES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-          echo "RELEASE_NOTES=$RELEASE_NOTES" >> $GITHUB_OUTPUT
+
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "Release notes generated successfully."
 
       # -------------------------------
       # Step 7: Update csproj for Version & Release Notes
@@ -132,7 +133,6 @@ jobs:
       # -------------------------------
       - name: Pack NuGet Package
         run: |
-          echo "Packing NuGet package..."
           dotnet pack Kannada.AsciiUnicode/Kannada.AsciiUnicode.csproj --configuration Release --no-build --output ./nupkg
           if [ ! -f ./nupkg/KannadaAsciiUnicodeSDK.${{ steps.set_version.outputs.NEW_VERSION }}.nupkg ]; then
             echo "Error: NuGet package not found!" && exit 1
@@ -157,7 +157,6 @@ jobs:
     env:
       NEW_VERSION: ${{ needs.build-test-pack.outputs.NEW_VERSION }}
       RELEASE_NOTES: ${{ needs.build-test-pack.outputs.RELEASE_NOTES }}
-
     steps:
       # -------------------------------
       # Step 1: Checkout Repository
@@ -194,7 +193,6 @@ jobs:
       # -------------------------------
       - name: Publish to NuGet
         run: |
-          echo "Publishing to NuGet..."
           dotnet nuget push ./nupkg/*.nupkg \
             --api-key ${{ secrets.NUGET_API_KEY_FOR_PUBLISH }} \
             --source https://api.nuget.org/v3/index.json \
