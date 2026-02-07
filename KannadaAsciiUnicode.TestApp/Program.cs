@@ -4,16 +4,16 @@ using System.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Kannada.AsciiUnicode.Converters;
+using KannadaAsciiUnicode.TestApp.Helpers;
 
 class Program
 {
     static void Main()
     {
-        // Ensure console can display Kannada properly
         Console.OutputEncoding = Encoding.UTF8;
 
         // -------------------------------
-        // Step 1: Optional custom mappings
+        // Custom mappings (optional)
         // -------------------------------
         var customAsciiToUnicode = new Dictionary<string, string>
         {
@@ -29,64 +29,99 @@ class Program
         };
 
         // -------------------------------
-        // Step 2: Initialize converter
+        // Initialize converter
         // -------------------------------
         var converter = KannadaConverter.CreateWithCustomMapping(
-            userAsciiToUnicodeMapping: customAsciiToUnicode,
-            userUnicodeToAsciiMapping: customUnicodeToAscii
+            customAsciiToUnicode,
+            customUnicodeToAscii
         );
 
         // -------------------------------
-        // Step 3: ASCII text to convert
+        // ASCII text conversion (string test)
         // -------------------------------
-        string asciiText = "MmÁÖgÉAiÀÄ zÀÈ¶Ö¬ÄAzÀ F PÉÆÃ±ÀªÀÅ UÀzÀÄV£À ¨sÁgÀvÀzÀ CzsÀåAiÀÄ£ÀPÁgÀjUÉ ¸ÀºÁAiÀÄPÀªÁzÀgÉ, CxÀªÁ PÀÄªÀiÁgÀªÁå¸À£À£ÀÄß CxÀðªÀiÁrPÉÆ¼ÀÄîªÀ°è CªÀ£À ªÀÄÆ® GzÉÝÃ±ÀzÀ ¸À«ÄÃ¥ÀPÉÌ CªÀgÀ£ÀÄß PÉÆAqÉÆAiÀÄÝgÉ £À£Àß ±ÀæªÀÄ ¸ÁxÀðPÀ. PÀÄªÀiÁgÀªÁå¸À ¨sÁgÀvÀPÉÌ ¥ÀzÀ¥ÀæAiÉÆÃUÀPÉÆÃ±ÀªÀ£ÀÄß gÀa¸ÀÄªÀ £À£Àß F ¥ÀæAiÀÄvÀß KPÀªÀåQÛAiÀÄ ¥ÀæAiÀÄvÀßªÁVzÀÄÝ, ¸ÀºÀdªÁVAiÉÄÃ £À£Àß §Ä¢ÞAiÀÄ ¹Ã«ÄvÀvÉAiÀÄ CxÀªÁ C£ÀªÀzsÁ£ÀzÀ PÀÁgÀt¢AzÀ EzÀgÀ°è PÉ®ªÀÅ PÀqÉ vÀ¥ÀÄàUÀ¼ÁVgÀ§ºÀÄzÀÄ.  F PÉÆÃ±ÀªÀ£ÀÄß §¼À¸ÀÄªÀªÀgÀÄ EzÀgÀ°è EgÀ§ºÀÄzÁzÀ vÀ¥ÀÄàUÀ¼À£ÀÄß £À£Àß UÀªÀÄ£ÀPÉÌ vÀAzÀgÉ (vkrishna1411@yahoo.co.in, mob. 90368 57528), CªÀÅUÀ¼À£ÀÄß ªÀÄÄA¢£À DªÀÈwÛAiÀÄ°è w¢ÝPÉÆ¼ÀÄîvÉÛÃ£É.  ";
-        // -------------------------------
-        // Step 4: Convert ASCII → Unicode with timing
-        // -------------------------------
+        string asciiText =
+            "MmÁÖgÉAiÀÄ zÀÈ¶Ö¬ÄAzÀ F PÉÆÃ±ÀªÀÅ UÀzÀÄV£À ¨sÁgÀvÀzÀ CzsÀåAiÀÄ£ÀPÁgÀjUÉ ¸ÀºÁAiÀÄPÀªÁzÀgÉ...";
+
         var swA2U = Stopwatch.StartNew();
         string unicodeText = converter.ConvertAsciiToUnicode(asciiText);
         swA2U.Stop();
-        long asciiToUnicodeMs = swA2U.ElapsedMilliseconds;
 
-        // -------------------------------
-        // Step 5: Convert Unicode → ASCII with timing
-        // -------------------------------
         var swU2A = Stopwatch.StartNew();
         string asciiRoundTrip = converter.ConvertUnicodeToAscii(unicodeText);
         swU2A.Stop();
-        long unicodeToAsciiMs = swU2A.ElapsedMilliseconds;
 
         // -------------------------------
-        // Step 6: Save results to file
+        // Save TXT results
         // -------------------------------
         Directory.CreateDirectory("output");
-        string outputFile = Path.Combine("output", "conversion_results.txt");
+        var txtOutput = Path.Combine("output", "conversion_results.txt");
 
-        var sb = new StringBuilder();
-        sb.AppendLine("=== Kannada ASCII ↔ Unicode Conversion ===");
-        sb.AppendLine($"Date/Time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-        sb.AppendLine();
-        sb.AppendLine("Original ASCII Text:");
-        sb.AppendLine(asciiText);
-        sb.AppendLine();
-        sb.AppendLine($"Converted Unicode Text (Time: {asciiToUnicodeMs}ms):");
-        sb.AppendLine(unicodeText);
-        sb.AppendLine();
-        sb.AppendLine($"Round-Trip ASCII Text (Time: {unicodeToAsciiMs}ms):");
-        sb.AppendLine(asciiRoundTrip);
-        sb.AppendLine();
-        sb.AppendLine($"Total Conversion Time: {asciiToUnicodeMs + unicodeToAsciiMs}ms");
+        File.WriteAllText(txtOutput, $"""
+        === Kannada ASCII ↔ Unicode Conversion ===
+        Time: {DateTime.Now}
 
-        File.WriteAllText(outputFile, sb.ToString(), Encoding.UTF8);
+        Original ASCII:
+        {asciiText}
 
-        // -------------------------------
-        // Step 7: Print results in console
-        // -------------------------------
-        Console.WriteLine("✓ Conversion complete!");
-        Console.WriteLine($"Original ASCII: {asciiText}");
-        Console.WriteLine($"Converted Unicode: {unicodeText} (Time: {asciiToUnicodeMs}ms)");
-        Console.WriteLine($"Round-Trip ASCII: {asciiRoundTrip} (Time: {unicodeToAsciiMs}ms)");
-        Console.WriteLine($"Total Conversion Time: {asciiToUnicodeMs + unicodeToAsciiMs}ms");
-        Console.WriteLine($"Results saved to: {outputFile}");
+        Unicode ({FormatTime(swA2U.Elapsed)}):
+        {unicodeText}
+
+        Round-trip ASCII ({FormatTime(swU2A.Elapsed)}):
+        {asciiRoundTrip}
+        """, Encoding.UTF8);
+
+        Console.WriteLine("✓ Text conversion complete");
+        Console.WriteLine($"ASCII → Unicode Time: {FormatTime(swA2U.Elapsed)}");
+        Console.WriteLine($"Unicode → ASCII Time: {FormatTime(swU2A.Elapsed)}");
+
+        // ==========================================================
+        // DOCX CONVERSION
+        // ==========================================================
+        var testDataDir = Path.Combine("TestData", "Docx");
+        var outputDir = "output";
+
+        Directory.CreateDirectory(testDataDir);
+        Directory.CreateDirectory(outputDir);
+
+        var asciiInputDocx = Path.Combine(testDataDir, "ascii_input.docx");
+        var unicodeInputDocx = Path.Combine(testDataDir, "unicode_input.docx");
+
+        // ASCII → Unicode DOCX
+        var asciiToUnicodeDocx = Path.Combine(outputDir, "ascii_to_unicode.docx");
+        long asciiDocxMs = DocxHelper.ConvertDocx(
+            asciiInputDocx,
+            asciiToUnicodeDocx,
+            converter.ConvertAsciiToUnicode);
+
+        // Unicode → ASCII DOCX
+        var unicodeToAsciiDocx = Path.Combine(outputDir, "unicode_to_ascii.docx");
+        long unicodeDocxMs = DocxHelper.ConvertDocx(
+            unicodeInputDocx,
+            unicodeToAsciiDocx,
+            converter.ConvertUnicodeToAscii);
+
+        var asciiDocxTime = TimeSpan.FromMilliseconds(asciiDocxMs);
+        var unicodeDocxTime = TimeSpan.FromMilliseconds(unicodeDocxMs);
+
+        // Append DOCX timing info
+        File.AppendAllText(
+            txtOutput,
+            Environment.NewLine +
+            "=== DOCX Conversion ===" + Environment.NewLine +
+            $"ASCII → Unicode DOCX Time: {FormatTime(asciiDocxTime)}" + Environment.NewLine +
+            $"Unicode → ASCII DOCX Time: {FormatTime(unicodeDocxTime)}" + Environment.NewLine +
+            $"Total DOCX Conversion Time: {FormatTime(asciiDocxTime + unicodeDocxTime)}" +
+            Environment.NewLine,
+            Encoding.UTF8);
+
+        Console.WriteLine("✓ DOCX conversion complete");
+        Console.WriteLine($"ASCII → Unicode DOCX: {FormatTime(asciiDocxTime)}");
+        Console.WriteLine($"Unicode → ASCII DOCX: {FormatTime(unicodeDocxTime)}");
     }
+
+    // -------------------------------
+    // Time formatting helper
+    // -------------------------------
+    private static string FormatTime(TimeSpan time) =>
+        $"{time.Minutes:D2} min {time.Seconds:D2} sec {time.Milliseconds:D3} ms";
 }
