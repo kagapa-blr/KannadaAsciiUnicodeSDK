@@ -2,6 +2,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Kannada.AsciiUnicode.Converters;
+using Kannada.AsciiUnicode.Interfaces;
 
 namespace Kannada.AsciiUnicode.Mappings
 {
@@ -12,7 +13,7 @@ namespace Kannada.AsciiUnicode.Mappings
 
         public static (
             Dictionary<string, string> mapping,
-            Dictionary<string, KannadaAsciiConverter.BrokenCaseInfo> brokenCases,
+            Dictionary<string, BrokenCaseInfo> brokenCases,
             Dictionary<string, string> vattaksharagalu,
             Dictionary<string, string> asciiArkavattu,
             HashSet<string> dependentVowels,
@@ -102,7 +103,7 @@ namespace Kannada.AsciiUnicode.Mappings
             return new HashSet<string>(list);
         }
 
-        private static Dictionary<string, KannadaAsciiConverter.BrokenCaseInfo>
+        private static Dictionary<string, BrokenCaseInfo>
             LoadBrokenCases(JObject root)
         {
             var token = root["brokenCases"];
@@ -113,7 +114,7 @@ namespace Kannada.AsciiUnicode.Mappings
             if (raw == null)
                 throw new InvalidDataException("'brokenCases' is not a valid object.");
 
-            var result = new Dictionary<string, KannadaAsciiConverter.BrokenCaseInfo>();
+            var result = new Dictionary<string, BrokenCaseInfo>();
 
             foreach (var kvp in raw)
             {
@@ -141,9 +142,9 @@ namespace Kannada.AsciiUnicode.Mappings
                         $"Broken case '{key}.mapping' is invalid."
                     );
 
-                result[key] = new KannadaAsciiConverter.BrokenCaseInfo
+                result[key] = new BrokenCaseInfo
                 {
-                    Value = value,
+                    Value = value!,
                     Mapping = mapping
                 };
             }

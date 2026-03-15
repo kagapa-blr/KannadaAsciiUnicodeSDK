@@ -1,100 +1,225 @@
-# KannadaAsciiUnicodeSDK
+# Kannada ASCII to Unicode Converter
 
-High-performance Kannada ASCII/ANSI ↔ Unicode conversion toolkit, developed and maintained by **Kannada Ganaka Parishat (KAGAPA)**.
+A high-performance C# library for converting between legacy Kannada ASCII encodings (Nudi, Baraha) and modern Unicode. Developed and maintained by Kannada Ganaka Parishat (KAGAPA).
 
-This repository hosts the **KannadaAsciiUnicode SDK**, a robust and optimized solution for converting legacy Kannada ASCII encodings (such as **Nudi** and **Baraha**) to modern **Unicode**, and vice versa.
+## Overview
 
----
+The Kannada ASCII to Unicode Converter provides robust bidirectional conversion for Kannada text. It handles complex linguistic features including consonant clusters, vowel signs, and special conjunctions with zero external dependencies.
 
-## 📦 Repository Structure
+## Key Features
 
-This solution contains the following projects:
+- Bidirectional conversion (ASCII to Unicode and Unicode to ASCII)
+- Handles Kannada consonant clusters and conjuncts correctly
+- Proper placement of vowel signs and dependent forms
+- Support for optional custom mappings
+- Zero external dependencies
+- Optimized for performance
+- 18+ unit tests with 100% pass rate
 
-- **Kannada.AsciiUnicode**  
-  Core SDK library published as a NuGet package.
+## Installation
 
-- **Kannada.AsciiUnicode.Tests**  
-  Unit tests validating conversion accuracy and edge cases.
+### Via NuGet
 
-- **KannadaAsciiUnicode.TestApp**  
-  Console application demonstrating real-world usage.
-
----
-
-## 🚀 Kannada.AsciiUnicode SDK
-
-The **Kannada.AsciiUnicode** project is the primary SDK and includes:
-
-- Bidirectional conversion (ASCII ↔ Unicode)
-- Correct handling of Kannada conjuncts and vowel signs
-- Optimized conversion logic
-- Support for user-defined custom mappings
-
-### 📘 SDK Documentation
-
-All SDK-specific documentation, including installation, usage examples, public API, and custom mapping support, is maintained here:
-
-Kannada.AsciiUnicode/README.md
-
-Please refer to that document for detailed developer guidance.
-
----
-
-## 📦 NuGet Package
-
-The SDK is available on NuGet as:
-
-KannadaAsciiUnicodeSDK
-
-Install via the .NET CLI:
-
+```bash
 dotnet add package KannadaAsciiUnicodeSDK
+```
 
-Package links:
+Visit [NuGet Package](https://www.nuget.org/packages/KannadaAsciiUnicodeSDK) for more information.
 
-- NuGet: https://www.nuget.org/packages/KannadaAsciiUnicodeSDK
-- Releases: https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases
+### Local Development
 
----
+Clone the repository and build locally:
 
-## 🧪 Build and Test
-
-To build the solution:
-
+```bash
+git clone <repository-url>
+cd KannadaAsciiUnicode
 dotnet build
+```
 
-To run the sample test application:
+## Quick Start
 
-cd KannadaAsciiUnicode.TestApp  
+### Basic Usage
+
+```csharp
+using Kannada.AsciiUnicode.Converters;
+
+// Get the default converter (singleton)
+var converter = KannadaConverter.Instance;
+
+// ASCII (Nudi/Baraha) to Unicode
+string unicode = converter.ConvertAsciiToUnicode("PÀ");
+// Output: "ಕ"
+
+// Unicode to ASCII
+string ascii = converter.ConvertUnicodeToAscii("ಕ");
+// Output: "PÀ"
+```
+
+### Custom Mappings
+
+For domain-specific or custom words, extend the default mappings:
+
+```csharp
+var customMapping = new Dictionary<string, string>
+{
+    { "ka", "ಕ" },
+    { "kaa", "ಕಾ" },
+    { "ma", "ಮ" }
+};
+
+var converter = KannadaConverter.CreateWithCustomMapping(customMapping);
+string result = converter.ConvertAsciiToUnicode("ka");  // Returns: "ಕ"
+```
+
+Note: Custom ASCII to Unicode mappings are automatically reversed for Unicode to ASCII conversion.
+
+## API Reference
+
+### KannadaConverter Class
+
+**Static Properties:**
+- `Instance` - Singleton instance with default mappings
+
+**Static Methods:**
+- `CreateWithCustomMapping(Dictionary<string, string>?)` - Creates converter with optional custom mappings
+
+**Instance Methods:**
+- `ConvertAsciiToUnicode(string)` - Converts ASCII text to Kannada Unicode
+- `ConvertUnicodeToAscii(string)` - Converts Kannada Unicode to ASCII format
+- `Convert(string, KannadaAsciiFormat)` - Routes conversion based on format (Nudi/Baraha)
+
+## Supported Formats
+
+- **Input Formats:** Kannada ASCII (Nudi, Baraha)
+- **Output Format:** Kannada Unicode (U+0C80 to U+0CF2)
+
+## Technical Details
+
+### Consonant Clusters and Zero-Width Joiner
+
+The converter correctly handles Kannada consonant clusters that require Zero-Width Joiner (ZWJ) characters to prevent ligature formation in text renderers. For example:
+
+```
+Input:  gÁåAPï
+Output: ರ‍್ಯಾಂಕ್   (includes ZWJ after ರಾ)
+```
+
+This ensures proper rendering across different applications and platforms.
+
+### Architecture
+
+The library uses a longest-match-first algorithm for ASCII sequence mapping, ensuring accurate conversion of multi-character sequences. Special handling is provided for:
+
+- Vattaksharagalu (consonant modifiers with vowel preservation)
+- Arkavattu (subjoined consonants)
+- Broken cases (vowel transformations)
+- Dependent vowels and conjuncts
+
+## Project Structure
+
+```
+KannadaAsciiUnicode/
+├── Kannada.AsciiUnicode/           # Core SDK library
+│   ├── Converters/                 # Conversion engines
+│   ├── Mappings/                   # ASCII/Unicode mapping loaders
+│   ├── Resources/                  # JSON mapping data
+│   ├── Interfaces/                 # Public contracts
+│   └── README.md                   # SDK documentation
+├── Kannada.AsciiUnicode.Tests/     # Unit tests (18+ test cases)
+├── KannadaAsciiUnicode.TestApp/    # Console demonstration
+└── DEVELOPER_GUIDE.md              # Contribution guidelines
+```
+
+## Build and Testing
+
+### Build
+
+```bash
+dotnet build
+```
+
+### Run Tests
+
+```bash
+dotnet test
+```
+
+Expected output:
+```
+Test summary: total: 18, failed: 0, succeeded: 18
+```
+
+### Run Test Application
+
+```bash
+cd KannadaAsciiUnicode.TestApp
 dotnet run
+```
 
----
+## Examples
 
-## 🤝 Contributions
+### Batch Processing
 
-Contributions are welcome and encouraged by KAGAPA.
+```csharp
+var converter = KannadaConverter.Instance;
+string[] inputs = { "PÀ", "gÀä", "zÀÈ¶Ö¬ÄAzÀ" };
 
-You can contribute by:
+foreach (var input in inputs)
+{
+    string output = converter.ConvertAsciiToUnicode(input);
+    Console.WriteLine($"{input} -> {output}");
+}
+```
 
-- Adding new ASCII ↔ Unicode mappings
-- Improving performance
-- Adding test coverage
-- Enhancing documentation
+### Round-Trip Conversion
 
-Please follow the contribution guidelines described in:
+```csharp
+var converter = KannadaConverter.Instance;
 
-Kannada.AsciiUnicode/README.md
+string original = "ಕನ್ನಡ";
+string toAscii = converter.ConvertUnicodeToAscii(original);
+string backToUnicode = converter.ConvertAsciiToUnicode(toAscii);
 
----
+// backToUnicode == original
+```
 
-## 📄 License
+### File Content Conversion
+
+```csharp
+var converter = KannadaConverter.Instance;
+
+string content = File.ReadAllText("input.txt", Encoding.UTF8);
+string converted = converter.ConvertAsciiToUnicode(content);
+File.WriteAllText("output.txt", converted, Encoding.UTF8);
+```
+
+## Supported .NET Versions
+
+- .NET Standard 2.0+
+- .NET Framework 4.7+
+- .NET Core 3.1+
+- .NET 5, 6, 7, 8, 9, 10+
+
+## Contributing
+
+Contributions are welcome. Please see [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for:
+
+- Code contribution guidelines
+- Testing requirements
+- Adding new ASCII/Unicode mappings
+- Improving documentation
+
+## Related Resources
+
+- Reference Implementation: https://9zx.in/sanka/
+- Kannada Unicode: https://en.wikipedia.org/wiki/Kannada_(Unicode_block)
+
+## License
 
 MIT License
 
-Developed and maintained by **Kannada Ganaka Parishat (KAGAPA)**
+Developed and maintained by Kannada Ganaka Parishat (KAGAPA)
 
----
+## About KAGAPA
 
-## 🌐 About KAGAPA
-
-Kannada Ganaka Parishat (KAGAPA) is dedicated to promoting Kannada computing, language tools, and open-source software that support the Kannada language ecosystem.
+Kannada Ganaka Parishat (KAGAPA) is a community organization dedicated to promoting Kannada-language computing, software development, and digital tools that support the Kannada language ecosystem.

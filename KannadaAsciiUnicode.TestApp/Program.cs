@@ -14,6 +14,7 @@ class Program
 
         // -------------------------------
         // Custom mappings (optional)
+        // ASCII→Unicode custom mappings are auto-reversed for Unicode→ASCII
         // -------------------------------
         var customAsciiToUnicode = new Dictionary<string, string>
         {
@@ -22,19 +23,12 @@ class Program
             { "UÉÀ", "ಗೆ" }
         };
 
-        var customUnicodeToAscii = new Dictionary<string, string>
-        {
-            { "ತೀಕ್ಷ್ಣ", "wÃPÀëÚ" },
-            { "ಕ್ಷ್ಣ", "PÀëÚ" }
-        };
-
         // -------------------------------
         // Initialize converter
+        // Note: Custom mappings are automatically reversed for Unicode→ASCII
+        // if needed for bidirectional conversion
         // -------------------------------
-        var converter = KannadaConverter.CreateWithCustomMapping(
-            customAsciiToUnicode,
-            customUnicodeToAscii
-        );
+        var converter = KannadaConverter.CreateWithCustomMapping(customAsciiToUnicode);
 
         // -------------------------------
         // ASCII text conversion (string test)

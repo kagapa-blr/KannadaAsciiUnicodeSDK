@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Kannada.AsciiUnicode.Interfaces;
 
 namespace Kannada.AsciiUnicode.Converters;
 
@@ -17,12 +18,6 @@ public class KannadaAsciiConverter
     private readonly HashSet<string> _dependentVowels;
     private readonly HashSet<string> _ignoreList;
     private readonly Dictionary<string, string> _reverseMapping;
-
-    public class BrokenCaseInfo
-    {
-        public string? Value { get; set; }
-        public Dictionary<string, string>? Mapping { get; set; }
-    }
 
     public KannadaAsciiConverter(
         Dictionary<string, string> mapping,
@@ -167,8 +162,8 @@ public class KannadaAsciiConverter
 
         if (_dependentVowels.Contains(lastLetter))
         {
-            // If last letter is dependent vowel
-            letters[letters.Count - 1] = "\u0CCD"; // Halant
+            // If last letter is dependent vowel, replace with ZWJ + halant
+            letters[letters.Count - 1] = "\u200D\u0CCD"; // ZWJ + Halant
             letters.Add(_vattaksharagalu[t]);
             letters.Add(lastLetter);
         }
@@ -190,14 +185,14 @@ public class KannadaAsciiConverter
         if (_dependentVowels.Contains(lastLetter))
         {
             letters[letters.Count - 2] = _asciiArkavattu[t];
-            letters[letters.Count - 1] = "\u0CCD";
+            letters[letters.Count - 1] = "\u0CCD"; // Halant only (no ZWJ)
             letters.Add(secondLast);
             letters.Add(lastLetter);
         }
         else
         {
             letters[letters.Count - 1] = _asciiArkavattu[t];
-            letters.Add("\u0CCD");
+            letters.Add("\u0CCD"); // Halant only (no ZWJ)
             letters.Add(lastLetter);
         }
 

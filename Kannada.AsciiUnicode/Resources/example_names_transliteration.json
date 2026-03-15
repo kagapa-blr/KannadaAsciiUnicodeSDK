@@ -1,0 +1,30 @@
+{
+    "meta": {
+        "name": "Kannada Names Transliteration",
+        "version": 1,
+        "description": "Custom mapping for transliterating common Kannada names from English to Kannada",
+        "author": "Kannada.AsciiUnicode Contributors"
+    },
+    "mapping": {
+        "Rama": "ರಾಮ",
+        "Ramachandran": "ರಾಮಚಂದ್ರನ್",
+        "Krishna": "ಕೃಷ್ಣ",
+        "Arjun": "ಅರ್ಜುನ್",
+        "Ashok": "ಅಶೋಕ",
+        "Bangalore": "ಬೆಂಗಳೂರು",
+        "Mysore": "ಮೈಸೂರು",
+        "Udupi": "ಉಡುಪಿ",
+        "Mangalore": "ಮಂಗಳೂರು",
+        "Dharwad": "ಧಾರವಾಡ",
+        "Belgaum": "ಬೆಳಗಾವಿ",
+        "Kolar": "ಕೋಲಾರ",
+        "Tumkur": "ತುಮಕೂರು",
+        "Hassan": "ಹಾಸನ",
+        "Chikmagalur": "ಚಿಕ್ಮಗಳೂರು",
+        "Davangere": "ದಾವಣಗೆರೆ",
+        "Shimoga": "ಶಿಮೋಗ",
+        "Kodagu": "ಕೊಡವ",
+        "Karnataka": "ಕರ್ನಾಟಕ",
+        "Kannada": "ಕನ್ನಡ"
+    }
+}

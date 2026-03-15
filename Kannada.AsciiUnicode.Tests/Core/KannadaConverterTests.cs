@@ -28,7 +28,11 @@ namespace Kannada.AsciiUnicode.Tests.Core
             { "PÀ", "ಕ" },
             { "CA", "ಅಂ" },   // Updated to match actual mapping
             { "PÉ", "ಕೆ" },
-            // Add more test cases here in future
+            {"gÁåAPï","ರ‍್ಯಾಂಕ್"},
+            {"n¥ÀàtÂ","ಟಿಪ್ಪಣಿ"},
+            {"ªÀÄÈqÀ","ಮೃಡ"},
+            {"¸ËPÀAiÀÄð","ಸೌಕರ್ಯ"}
+
         };
 
         [Theory]

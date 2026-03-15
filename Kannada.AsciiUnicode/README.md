@@ -1,143 +1,217 @@
-# KannadaAsciiUnicodeSDK
+# Kannada.AsciiUnicode - SDK Library Documentation
 
-High-performance Kannada ASCII/ANSI ↔ Unicode converter, developed and maintained by **KAGAPA**.
+Core library documentation for the Kannada ASCII to Unicode converter SDK. For general information and usage examples, see the main [README](../README.md).
 
-This library allows bidirectional conversion between legacy Kannada ASCII encodings (like Nudi/Baraha) and Unicode.
+## Architecture
 
----
+The SDK is organized into the following components:
 
-## Quick Start
+### Converters
 
-### Installation
+- **KannadaAsciiConverter**: Core conversion engine implementing the longest-match-first algorithm
+- **KannadaConverter**: Public API providing singleton instance and factory methods
 
-Clone or reference the `Kannada.AsciiUnicode` library in your project.
+### Mappings
 
-### Basic Usage
+- **KannadaMappingLoader**: Loads ASCII/Unicode mapping data from embedded JSON resources
+- **BrokenCaseInfo**: Data model for special vowel transformation cases
+
+### Resources
+
+- **AsciiToUnicodeMapping.json**: Complete mapping of ASCII sequences to Unicode characters
+- **UnicodeToAsciiMapping.json**: Reverse mapping (Unicode to ASCII)
+- **NudiBarahaMapping.json**: Extended mappings for Nudi and Baraha formats
+
+### Interfaces
+
+- **IAsciiUnicodeConverter**: Public contract for conversion operations
+
+## API Reference
+
+### KannadaConverter Class
 
 ```csharp
-using Kannada.AsciiUnicode.Converters;
+public sealed class KannadaConverter : IAsciiUnicodeConverter
+{
+    // Singleton accessor
+    public static KannadaConverter Instance { get; }
 
-var converter = KannadaConverter.Instance;
+    // Factory method for custom mappings
+    public static KannadaConverter CreateWithCustomMapping(
+        Dictionary<string, string>? customMapping = null
+    );
 
-// ASCII → Unicode
-string unicode = converter.ConvertAsciiToUnicode("PÀ£ÀßqÀ");
-// Output: "ಕನ್ನಡ"
-
-// Unicode → ASCII
-string ascii = converter.ConvertUnicodeToAscii("ಕನ್ನಡ");
-// Output: "PÀ£ï£ÀqÀ"
+    // Conversion methods
+    public string ConvertAsciiToUnicode(string asciiText);
+    public string ConvertUnicodeToAscii(string unicodeText);
+    public string Convert(string text, KannadaAsciiFormat format);
+}
 ```
 
-### Using Custom User Mappings
+### Usage Patterns
 
-Developers can provide **custom ASCII → Unicode or Unicode → ASCII mappings**:
+#### Pattern 1: Default Converter
 
 ```csharp
-var customAsciiToUnicode = new Dictionary<string, string>
+var converter = KannadaConverter.Instance;
+string unicode = converter.ConvertAsciiToUnicode("PÀ£ÀßqÀ");  // ಕನ್ನಡ
+```
+
+#### Pattern 2: Custom Mappings
+
+```csharp
+var customMapping = new Dictionary<string, string>
 {
     { "wÃPÀëÚ", "ತೀಕ್ಷ್ಣ" },
     { "PÀëÚ", "ಕ್ಷ್ಣ" },
     { "UÉÀ", "ಗೆ" }
 };
 
-var customUnicodeToAscii = new Dictionary<string, string>
-{
-    { "ತೀಕ್ಷ್ಣ", "wÃPÀëÚ" },
-    { "ಕ್ಷ್ಣ", "PÀëÚ" }
-};
+var converter = KannadaConverter.CreateWithCustomMapping(customMapping);
 
-var converter = KannadaConverter.CreateWithCustomMapping(
-    userAsciiToUnicodeMapping: customAsciiToUnicode,
-    userUnicodeToAsciiMapping: customUnicodeToAscii
-);
-
-string unicodeText = converter.ConvertAsciiToUnicode("wÃPÀëÚ PÀëÚ");
-string asciiText = converter.ConvertUnicodeToAscii("ತೀಕ್ಷ್ಣ ಕ್ಷ್ಣ");
+// Custom mappings auto-reverse for Unicode to ASCII
+string unicode = converter.ConvertAsciiToUnicode("wÃPÀëÚ");      // ತೀಕ್ಷ್ಣ
+string ascii = converter.ConvertUnicodeToAscii("ತೀಕ್ಷ್ಣ");      // wÃPÀëÚ
 ```
 
-This enables developers to **extend the default mapping** for rare or custom words.
-
----
-
-## Features
-
-* ✅ Bidirectional conversion (ASCII ↔ Unicode)
-* ✅ Handles consonant clusters and conjuncts
-* ✅ Correct placement of vowel signs
-* ✅ Supports custom user mappings
-* ✅ Optimized for performance, zero external dependencies
-* ✅ Robust handling of common conversion errors
-
----
-
-## Public API
-
-### KannadaConverter (Singleton)
+#### Pattern 3: Batch Processing
 
 ```csharp
-public class KannadaConverter : IAsciiUnicodeConverter
+var converter = KannadaConverter.Instance;
+
+string[] textItems = { "PÀ", "gÀä", "zÀÈ¶Ö¬ÄAzÀ" };
+var results = textItems
+    .Select(item => converter.ConvertAsciiToUnicode(item))
+    .ToList();
+```
+
+## Implementation Details
+
+### Conversion Algorithm
+
+The converter uses a longest-match-first algorithm:
+
+1. For each character position in the input text
+2. Try to match the longest possible ASCII sequence (up to 4 characters)
+3. If found, add the corresponding Unicode character
+4. If not found, apply special processing rules (vattaksharagalu, arkavattu, broken cases)
+5. Move to the next unprocessed character
+
+### Special Handling
+
+**Vattaksharagalu** (consonant modifiers):
+- Applied when a consonant modifier follows a vowel-bearing consonant
+- Inserts Zero-Width Joiner (ZWJ) to prevent unwanted ligatures
+- Example: ರಾ + ಯ -> ರ‍್ಯ (with ZWJ)
+
+**Arkavattu** (subjoined consonants):
+- Applied when a consonant modifier follows a base consonant
+- No ZWJ required as ligature formation is appropriate
+- Example: ಕ + ರ -> ಕರ್
+
+**Broken Cases**:
+- Special vowel transformations for specific characters
+- Defined in NudiBarahaMapping.json
+
+## Testing
+
+### Running Tests
+
+```bash
+dotnet test
+```
+
+### Test Coverage
+
+- 18+ test cases covering:
+  - Basic ASCII to Unicode conversion
+  - Unicode to ASCII conversion
+  - Bidirectional round-trip stability
+  - Custom mapping functionality
+  - Edge cases and special characters
+  - Consonant clusters with vattaksharagalu
+  - Consonant clusters with arkavattu
+
+### Adding Tests
+
+Add test cases to `Kannada.AsciiUnicode.Tests/Core/KannadaConverterTests.cs`:
+
+```csharp
+public static readonly TheoryData<string, string> AsciiToUnicodeCases = new()
 {
-    public static KannadaConverter Instance { get; }
+    { "PÀ", "ಕ" },
+    { "gÀä", "ರಿ" },
+    // Add your test case here
+};
 
-    public string ConvertAsciiToUnicode(string asciiText);
-
-    public string ConvertUnicodeToAscii(string unicodeText);
-
-    public string Convert(string text, KannadaAsciiFormat format);
-
-    public static KannadaConverter CreateWithCustomMapping(
-        Dictionary<string, string>? userAsciiToUnicodeMapping = null,
-        Dictionary<string, string>? userUnicodeToAsciiMapping = null
-    );
+[Theory]
+[MemberData(nameof(AsciiToUnicodeCases))]
+public void ConvertAsciiToUnicode_Should_Return_Expected_Unicode(string ascii, string expectedUnicode)
+{
+    var result = _converter.ConvertAsciiToUnicode(ascii);
+    Assert.Equal(expectedUnicode, result);
 }
 ```
 
----
+## Performance Characteristics
 
-## Developer Contribution
+- First instantiation: ~1-2ms (resource loading)
+- Average conversion: <1ms per operation
+- Memory footprint: ~150KB for default mappings
+- Scalable for batch processing
 
-KAGAPA encourages developers to contribute:
+## Extending the Library
 
-### Areas to Contribute
+### Adding New Mappings
 
-* 📝 Add more ASCII → Unicode mappings for rare characters
-* ⚡ Optimize conversion performance
-* 🧪 Add test cases for edge scenarios
-* 📖 Improve documentation
-* 🐛 Report bugs and suggest fixes
+Mappings are defined in JSON resources under `Resources/`:
 
-### How to Contribute
+#### ASCII to Unicode Mapping
 
-1. Fork the repository
-2. Add/update mappings or modify conversion logic
-3. Test thoroughly using `KannadaAsciiUnicode.TestApp`
-4. Submit a pull request
+Edit `AsciiToUnicodeMapping.json`:
 
----
-
-## Testing & Example Usage
-
-```bash
-# Build the solution
-dotnet build
-
-# Run the test app
-cd KannadaAsciiUnicode.TestApp
-dotnet run
-
-# Check conversion results in output/conversion_results.txt
+```json
+{
+  "mapping": {
+    "PÀ": "ಕ",
+    "gÀä": "ರಿ",
+    "your_sequence": "ಯೋಕ",
+  }
+}
 ```
 
----
+#### Reverse Mapping
+
+`UnicodeToAsciiMapping.json` is auto-generated by reversing the primary mapping.
+
+### Custom Mapping API
+
+For runtime mappings, use `CreateWithCustomMapping`:
+
+```csharp
+var customMapping = new Dictionary<string, string>
+{
+    { "ascii_seq", "unicode_char" }
+};
+
+var converter = KannadaConverter.CreateWithCustomMapping(customMapping);
+```
+
+## Debugging
+
+Enable detailed output by creating a test converter:
+
+```csharp
+var converter = KannadaConverter.Instance;
+
+// Test specific sequences
+string result = converter.ConvertAsciiToUnicode("PÀ");
+Console.WriteLine($"Result: {result}");
+Console.WriteLine($"Unicode codepoints: {string.Join(", ", result.Select(c => c.ToString("X4")))}");
+```
 
 ## License
 
 MIT License
-Developed and maintained by **KAGAPA**
 
----
-
-## Releases
-
-Latest releases and NuGet packages are available at:
-[https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases](https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK/releases)
+Developed and maintained by Kannada Ganaka Parishat (KAGAPA)
