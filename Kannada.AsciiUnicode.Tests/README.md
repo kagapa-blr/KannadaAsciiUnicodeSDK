@@ -131,7 +131,7 @@ Expected: "ಕ"
 Actual:   "ಸ"
 ```
 
-Check mapping in AsciiToUnicodeMapping.json.
+Check mapping in `NudiBarahaMapping.json` under the `mapping` section.
 
 ## Test Structure
 

@@ -42,12 +42,12 @@ Add or refine ASCII to Unicode mappings for:
 - Special conjunctions and ligatures
 - Domain-specific terminology
 
-**Location:** `Kannada.AsciiUnicode/Resources/`
+**Location:** `Kannada.AsciiUnicode/Resources/NudiBarahaMapping.json`
 
 **How to contribute:**
-1. Edit `AsciiToUnicodeMapping.json` or `NudiBarahaMapping.json`
-2. Add your new mappings
-3. Add corresponding test cases
+1. Edit `NudiBarahaMapping.json` to add new mappings
+2. Add your new mapping entries to the appropriate JSON sections
+3. Add corresponding test cases in `Kannada.AsciiUnicode.Tests/Core/KannadaConverterTests.cs`
 4. Test with `dotnet test`
 
 ### 2. Bug Fixes
@@ -211,7 +211,7 @@ public string ConvertAsciiToUnicode(string asciiText)
 
 ### ASCII to Unicode Mapping
 
-Structure in `AsciiToUnicodeMapping.json`:
+Structure in `NudiBarahaMapping.json`:
 
 ```json
 {
