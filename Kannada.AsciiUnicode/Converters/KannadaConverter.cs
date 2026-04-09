@@ -20,14 +20,18 @@ namespace Kannada.AsciiUnicode.Converters
         public static KannadaConverter Instance => _instance.Value;
 
         /// <summary>
-        /// Creates a converter with optional custom ASCII→Unicode mappings.
+        /// Creates a converter with optional custom ASCII→Unicode mappings and configurable sequence length.
         /// </summary>
-        public static KannadaConverter CreateWithCustomMapping(Dictionary<string, string>? customMapping = null)
+        /// <param name="customMapping">Optional custom ASCII to Unicode mappings to merge with defaults</param>
+        /// <param name="maxSequenceLength">Maximum ASCII sequence length to match during conversion (default 8)</param>
+        public static KannadaConverter CreateWithCustomMapping(
+            Dictionary<string, string>? customMapping = null,
+            int maxSequenceLength = 8)
         {
-            return new KannadaConverter(customMapping);
+            return new KannadaConverter(customMapping, maxSequenceLength);
         }
 
-        private KannadaConverter(Dictionary<string, string>? customMapping = null)
+        private KannadaConverter(Dictionary<string, string>? customMapping = null, int maxSequenceLength = 8)
         {
             // Load default mappings
             var (defaultMapping, brokenCases, vattaksharagalu, asciiArkavattu,
@@ -43,7 +47,7 @@ namespace Kannada.AsciiUnicode.Converters
                 reverseMapping = CreateReverseMapping(defaultMapping);
             }
 
-            // Initialize converter
+            // Initialize converter with configurable max sequence length
             _converter = new KannadaAsciiConverter(
                 defaultMapping,
                 brokenCases,
@@ -51,7 +55,8 @@ namespace Kannada.AsciiUnicode.Converters
                 asciiArkavattu,
                 dependentVowels,
                 ignoreList,
-                reverseMapping
+                reverseMapping,
+                maxSequenceLength
             );
         }
 
