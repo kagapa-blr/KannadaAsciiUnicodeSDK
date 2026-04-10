@@ -1,0 +1,248 @@
+{
+  "asciiToUnicodeBasic": [
+    {
+      "ascii": "PÀ",
+      "unicode": "ಕ",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "CA",
+      "unicode": "ಅಂ",
+      "description": "Vowel with anusvara"
+    },
+    {
+      "ascii": "PÉ",
+      "unicode": "ಕೆ",
+      "description": "Consonant with short vowel"
+    },
+    {
+      "ascii": "gÁåAPï",
+      "unicode": "ರ‍್ಯಾಂಕ್",
+      "description": "Complex word with conjuncts"
+    },
+    {
+      "ascii": "n¥ÀàtÂ",
+      "unicode": "ಟಿಪ್ಪಣಿ",
+      "description": "Word meaning note/memo"
+    },
+    {
+      "ascii": "ªÀÄÈqÀ",
+      "unicode": "ಮೃಡ",
+      "description": "Word with special characters"
+    },
+    {
+      "ascii": "¸ËPÀAiÀÄð",
+      "unicode": "ಸೌಕರ್ಯ",
+      "description": "Word meaning convenience"
+    },
+    {
+      "ascii": "JA§",
+      "unicode": "ಎಂಬ",
+      "description": "Commonly used word"
+    },
+    {
+      "ascii": "D±ÀAiÀÄUÀ¼À£ÀÄß",
+      "unicode": "ಆಶಯಗಳನ್ನು",
+      "description": "Commonly used word"
+    },
+    {
+      "ascii": "¹zÀÝgÁªÀÄAiÀÄð",
+      "unicode": "ಸಿದ್ದರಾಮಯ್ಯ",
+      "description": "Commonly used word"
+    },
+    {
+      "ascii": "gÁ¶ÖçÃAiÀÄ",
+      "unicode": "ರಾಷ್ಟ್ರೀಯ",
+      "description": "Commonly used word"
+    }
+
+
+  
+  ],
+  "asciiToUnicodeAdvanced": [
+    {
+      "ascii": "gÀÜå",
+      "unicode": "ರ‍್ಥ್ಯ",
+      "description": "Three-consonant conjunct with combining marks"
+    },
+    {
+      "ascii": "xÀåð",
+      "unicode": "ರ್ಥ್ಯ",
+      "description": "Alternative conjunct form"
+    },
+    {
+      "ascii": "¸ÀäÈ",
+      "unicode": "ಸ್ಮೃ",
+      "description": "Consonant cluster with vowel length mark"
+    },
+    {
+      "ascii": "gÀå",
+      "unicode": "ರ‍್ಯ",
+      "description": "Vattakshara consonant conjunct"
+    },
+    {
+      "ascii": "gÁå",
+      "unicode": "ರ‍್ಯಾ",
+      "description": "Vattakshara with long vowel"
+    },
+    {
+      "ascii": "jå",
+      "unicode": "ರ‍್ಯಿ",
+      "description": "Vattakshara with short i vowel"
+    },
+    {
+      "ascii": "jåÃ",
+      "unicode": "ರ‍್ಯೀ",
+      "description": "Vattakshara with long i vowel"
+    },
+    {
+      "ascii": "gÀÄå",
+      "unicode": "ರ‍್ಯು",
+      "description": "Vattakshara with u vowel"
+    },
+    {
+      "ascii": "gÀÆå",
+      "unicode": "ರ‍್ಯೂ",
+      "description": "Vattakshara with long u vowel"
+    },
+    {
+      "ascii": "gÀåÈ",
+      "unicode": "ರ‍್ಯೃ",
+      "description": "Vattakshara with vocalic r"
+    },
+    {
+      "ascii": "gÉå",
+      "unicode": "ರ‍್ಯೆ",
+      "description": "Vattakshara with short e vowel"
+    },
+    {
+      "ascii": "gÉåÃ",
+      "unicode": "ರ‍್ಯೇ",
+      "description": "Vattakshara with long e vowel"
+    },
+    {
+      "ascii": "gÉÆå",
+      "unicode": "ರ‍್ಯೊ",
+      "description": "Vattakshara with short o vowel"
+    },
+    {
+      "ascii": "gÉÆåÃ",
+      "unicode": "ರ‍್ಯೋ",
+      "description": "Vattakshara with long o vowel"
+    },
+    {
+      "ascii": "gÀåA",
+      "unicode": "ರ‍್ಯಂ",
+      "description": "Vattakshara with anusvara"
+    },
+    {
+      "ascii": "gÀåB",
+      "unicode": "ರ‍್ಯಃ",
+      "description": "Vattakshara with visarga"
+    },
+    {
+      "ascii": "ªÀiÁåð",
+      "unicode": "ರ್ಮ್ಯಾ",
+      "description": "Complex conjunct pattern"
+    },
+    {
+      "ascii": "µï",
+      "unicode": "ಷ್",
+      "description": "Retroflex consonant with halant"
+    }
+
+
+
+  ],
+  "asciiToUnicodeRealWords": [
+    {
+      "ascii": "ªÀÄÄ¢æ¸ÀÄwÛgÀÄªÀÅzÀÄ",
+      "unicode": "ಮುದ್ರಿಸುತ್ತಿರುವುದು",
+      "description": "Word meaning printing/ongoing action"
+    },
+    {
+      "ascii": "d£À¦æAiÀÄ",
+      "unicode": "ಜನಪ್ರಿಯ",
+      "description": "Word meaning popular"
+    }
+  ],
+  "unicodeToAscii": [
+    {
+      "unicode": "ಕ",
+      "ascii": "PÀ",
+      "description": "Simple consonant"
+    },
+    {
+      "unicode": "ಅಂ",
+      "ascii": "CA",
+      "description": "Vowel with anusvara"
+    },
+    {
+      "unicode": "ಕೆ",
+      "ascii": "PÉ",
+      "description": "Consonant with vowel"
+    }
+  ],
+  "preprocessingDuplicateCollapse": [
+    {
+      "ascii": "PPÀÀ",
+      "unicode": "ಕ",
+      "description": "PP collapsed to P, ÀÀ collapsed to À"
+    },
+    {
+      "ascii": "PÀÀ",
+      "unicode": "ಕ",
+      "description": "ÀÀ collapsed to À"
+    },
+    {
+      "ascii": "PÀ",
+      "unicode": "ಕ",
+      "description": "No duplicates baseline"
+    },
+    {
+      "ascii": "PÉÉ",
+      "unicode": "ಕೆ",
+      "description": "ÉÉ collapsed to É"
+    },
+    {
+      "ascii": "gÉÉå",
+      "unicode": "ರ‍್ಯೆ",
+      "description": "ÉÉ collapsed in vattakshara"
+    },
+    {
+      "ascii": "gÀåå",
+      "unicode": "ರ‍್ಯ",
+      "description": "å collapsed in duplicate"
+    },
+    {
+      "ascii": "gÁåå",
+      "unicode": "ರ‍್ಯಾ",
+      "description": "å collapsed with vowel"
+    }
+  ],
+  "preprocessingMultipleWords": [
+    {
+      "ascii": "PÀÀ gÀå",
+      "unicode": "ಕ ರ‍್ಯ",
+      "description": "First word duplicate collapse, second with vattakshara"
+    },
+    {
+      "ascii": "PPÀÀ zzÀä",
+      "unicode": "ಕ ದ್ಮ",
+      "description": "Duplicates collapsed in both words"
+    }
+  ],
+  "roundTrip": [
+    {
+      "unicode": "ಕನ್ನಡ",
+      "description": "Word Kannada - should contain ಕ"
+    }
+  ],
+  "edgeCases": [
+    {
+      "ascii": "",
+      "unicode": "",
+      "description": "Empty string handling"
+    }
+  ]
+}

@@ -760,19 +760,14 @@
   },
   "ignoreList": ["ö", "÷"],
   "preprocessingRules": {
-    "enabled": true,
-    "description": "Preprocessing rules applied before ASCII to Unicode conversion to minimize errors",
-    "rules": {
-      "collapseDuplicateCharacters": {
-        "enabled": true,
-        "description": "Collapse consecutive duplicate characters (e.g., ÀÀ → À, ÉÉ → É). Reduces OCR and user input errors.",
-        "examples": ["ÀÀ → À", "ÉÉ → É", "PPÀ → PÀ"]
-      },
-      "removeInternalSpaces": {
-        "enabled": true,
-        "description": "Remove spaces within words (space-separated text). Helps with OCR artifacts and spacing errors around halants.",
-        "examples": ["P À → PÀ", "g À å → gÀå"]
-      }
+    "collapseDuplicateCharacters": {
+      "ÀÀ": "À",
+      "ÉÉ": "É"
+    },
+ 
+    "removeInternalSpaces": {
+      "P À": "PÀ",
+      "g À å": "gÀå"
     }
   }
 }

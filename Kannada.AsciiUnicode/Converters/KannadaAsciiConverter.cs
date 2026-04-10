@@ -81,9 +81,11 @@ public class KannadaAsciiConverter
     }
 
     /// <summary>
-    /// Preprocesses ASCII input to reduce conversion errors:
-    /// - Collapses duplicate consecutive characters (ÀÀ → À, ÉÉ → É, etc.)
-    /// - Removes internal spaces within words
+    /// Preprocesses ASCII input to reduce conversion errors based on rules defined in NudiBarahaMapping.json.
+    /// Applies two transformations:
+    /// 1. collapseDuplicateCharacters: Removes consecutive duplicate characters (e.g., ÀÀ becomes À, ÉÉ becomes É)
+    /// 2. removeInternalSpaces: Eliminates spaces within words (e.g., P À becomes PÀ, g À å becomes gÀå)
+    /// These preprocessing steps help handle OCR errors and spacing artifacts.
     /// </summary>
     private string PreprocessAsciiInput(string word)
     {

@@ -1,16 +1,51 @@
 using Kannada.AsciiUnicode.Converters;
 using Kannada.AsciiUnicode.Enums;
+using Kannada.AsciiUnicode.Tests.Helpers;
 using Xunit;
 
 namespace Kannada.AsciiUnicode.Tests.Core
 {
+    /// <summary>
+    /// Comprehensive unit tests for Kannada ASCII to Unicode converter.
+    /// Test data is organized and loaded from TestCases.json for better maintainability.
+    /// </summary>
     public class KannadaConverterTests
     {
         private readonly KannadaConverter _converter = KannadaConverter.Instance;
 
-        // -----------------------------
-        // Singleton behavior
-        // -----------------------------
+        // =====================================================
+        // TEST DATA - Loaded from TestCases.json
+        // =====================================================
+
+        public static readonly TheoryData<string, string> AsciiToUnicodeCases =
+            ConvertTestCasesToTheoryData(TestDataLoader.GetAllAsciiToUnicode());
+
+        public static readonly TheoryData<string, string> UnicodeToAsciiCases =
+            ConvertTestCasesToTheoryData(TestDataLoader.GetUnicodeToAscii());
+
+        public static readonly TheoryData<string, string> PreprocessingDuplicatesCases =
+            ConvertTestCasesToTheoryData(TestDataLoader.GetPreprocessingDuplicateCollapse());
+
+        public static readonly TheoryData<string, string> PreprocessingMultiWordCases =
+            ConvertTestCasesToTheoryData(TestDataLoader.GetPreprocessingMultipleWords());
+
+        /// <summary>
+        /// Helper method to convert TestCase objects to TheoryData for xUnit.
+        /// </summary>
+        private static TheoryData<string, string> ConvertTestCasesToTheoryData(List<TestCase> testCases)
+        {
+            var theoryData = new TheoryData<string, string>();
+            foreach (var testCase in testCases)
+            {
+                theoryData.Add(testCase.Ascii, testCase.Unicode);
+            }
+            return theoryData;
+        }
+
+        // =====================================================
+        // SINGLETON BEHAVIOR
+        // =====================================================
+
         [Fact]
         public void Instance_Should_Be_Singleton()
         {
@@ -20,45 +55,9 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Same(first, second);
         }
 
-        // -----------------------------
-        // ASCII → Unicode conversion
-        // -----------------------------
-        public static readonly TheoryData<string, string> AsciiToUnicodeCases = new()
-{
-    { "PÀ", "ಕ" },
-    { "CA", "ಅಂ" },
-    { "PÉ", "ಕೆ" },
-    { "gÁåAPï", "ರ‍್ಯಾಂಕ್" },
-    { "n¥ÀàtÂ", "ಟಿಪ್ಪಣಿ" },
-    { "ªÀÄÈqÀ", "ಮೃಡ" },
-    { "¸ËPÀAiÀÄð", "ಸೌಕರ್ಯ" },
-    { "JA§", "ಎಂಬ" },
-
-    // --- Added mappings ---
-    { "gÀÜå", "ರ‍್ಥ್ಯ" },
-    { "xÀåð", "ರ್ಥ್ಯ" },
-    { "¸ÀäÈ", "ಸ್ಮೃ" },
-    { "gÀå", "ರ‍್ಯ" },
-    { "gÁå", "ರ‍್ಯಾ" },
-    { "jå", "ರ‍್ಯಿ" },
-    { "jåÃ", "ರ‍್ಯೀ" },
-    { "gÀÄå", "ರ‍್ಯು" },
-    { "gÀÆå", "ರ‍್ಯೂ" },
-    { "gÀåÈ", "ರ‍್ಯೃ" },
-    { "gÉå", "ರ‍್ಯೆ" },
-    { "gÉåÃ", "ರ‍್ಯೇ" },
-    { "gÉÆå", "ರ‍್ಯೊ" },
-    { "gÉÆåÃ", "ರ‍್ಯೋ" },
-    { "gÀåA", "ರ‍್ಯಂ" },
-    { "gÀåB", "ರ‍್ಯಃ" },
-    {"ªÀiÁåð", "ರ್ಮ್ಯಾ"},
-    { "µï", "ಷ್" },
-
-    {"ªÀÄÄ¢æ¸ÀÄwÛgÀÄªÀÅzÀÄ","ಮುದ್ರಿಸುತ್ತಿರುವುದು"},
-    {"d£À¦æAiÀÄ","ಜನಪ್ರಿಯ"}
-
-
-};
+        // =====================================================
+        // ASCII → UNICODE CONVERSION
+        // =====================================================
 
         [Theory]
         [MemberData(nameof(AsciiToUnicodeCases))]
@@ -68,16 +67,9 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Equal(expectedUnicode, result);
         }
 
-        // -----------------------------
-        // Unicode → ASCII conversion
-        // -----------------------------
-        public static readonly TheoryData<string, string> UnicodeToAsciiCases = new()
-        {
-            { "ಕ", "PÀ" },
-            { "ಅಂ", "CA" }, // Updated to match actual mapping
-            { "ಕೆ", "PÉ" },
-            // Add more test cases here in future
-        };
+        // =====================================================
+        // UNICODE → ASCII CONVERSION
+        // =====================================================
 
         [Theory]
         [MemberData(nameof(UnicodeToAsciiCases))]
@@ -87,9 +79,10 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Equal(expectedAscii, result);
         }
 
-        // -----------------------------
-        // Convert() router behavior
-        // -----------------------------
+        // =====================================================
+        // CONVERTER ROUTER BEHAVIOR
+        // =====================================================
+
         [Theory]
         [InlineData(KannadaAsciiFormat.Nudi)]
         [InlineData(KannadaAsciiFormat.Baraha)]
@@ -107,9 +100,10 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Equal(input, result);
         }
 
-        // -----------------------------
-        // Round-trip stability
-        // -----------------------------
+        // =====================================================
+        // ROUND-TRIP STABILITY
+        // =====================================================
+
         [Fact]
         public void Unicode_To_Ascii_To_Unicode_Should_Preserve_Text()
         {
@@ -122,9 +116,10 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Contains("ಕ", roundTrip);
         }
 
-        // -----------------------------
-        // Edge cases
-        // -----------------------------
+        // =====================================================
+        // EDGE CASES
+        // =====================================================
+
         [Theory]
         [InlineData("")]
         public void ConvertAsciiToUnicode_Should_Handle_Empty_String(string input)
@@ -145,55 +140,40 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Throws<ArgumentNullException>(() => _converter.ConvertUnicodeToAscii(null!));
         }
 
-        // -----------------------------
-        // Preprocessing: Duplicate character collapse
+        // =====================================================
+        // PREPROCESSING: DUPLICATE CHARACTER COLLAPSE
         // Consecutive duplicate characters are collapsed (ÀÀ → À, ÉÉ → É, etc.)
-        // This reduces OCR errors and user input mistakes
-        // -----------------------------
+        // This reduces OCR errors and user input mistakes.
+        // See preprocessingRules in NudiBarahaMapping.json
+        // =====================================================
+
         [Theory]
-        [InlineData("PPÀÀ", "ಕ")]        // PP collapsed to P, ÀÀ collapsed to À → PÀ → ಕ
-        [InlineData("PÀÀ", "ಕ")]         // ÀÀ collapsed to À → PÀ → ಕ
-        [InlineData("PÀ", "ಕ")]          // No duplicates, baseline
-        public void ConvertAsciiToUnicode_Should_Collapse_Duplicate_Characters_In_Consonants(string ascii, string expectedUnicode)
+        [MemberData(nameof(PreprocessingDuplicatesCases))]
+        public void ConvertAsciiToUnicode_Should_Collapse_Duplicate_Characters(string ascii, string expectedUnicode)
         {
             var result = _converter.ConvertAsciiToUnicode(ascii);
             Assert.Equal(expectedUnicode, result);
         }
 
-        [Theory]
-        [InlineData("PÉÉ", "ಕೆ")]       // ÉÉ collapsed to É → PÉ → ಕೆ
-        [InlineData("gÉÉå", "ರ‍್ಯೆ")]     // ÉÉ collapsed → gÉå → ರ‍್ಯೆ
-        public void ConvertAsciiToUnicode_Should_Collapse_Duplicate_Vowel_Marks(string ascii, string expectedUnicode)
-        {
-            var result = _converter.ConvertAsciiToUnicode(ascii);
-            Assert.Equal(expectedUnicode, result);
-        }
+        // =====================================================
+        // PREPROCESSING: WORD SPACING
+        // =====================================================
 
-        // Test vattakshara variations with duplicate collapse
-        [Theory]
-        [InlineData("gÀåå", "ರ‍್ಯ")]       // å collapsed, gÀå → ರ‍್ಯ
-        [InlineData("gÁåå", "ರ‍್ಯಾ")]      // gÁå → ರ‍್ಯಾ
-        public void ConvertAsciiToUnicode_Should_Handle_Duplicate_Vattakshara_Characters(string ascii, string expectedUnicode)
-        {
-            var result = _converter.ConvertAsciiToUnicode(ascii);
-            Assert.Equal(expectedUnicode, result);
-        }
-
-        // Word spacing is preserved - only spaces between words
         [Fact]
         public void ConvertAsciiToUnicode_Should_Preserve_Word_Spacing()
         {
             var result = _converter.ConvertAsciiToUnicode("PÀ gÀä");
             var parts = result.Split(' ');
-            Assert.Equal(2, parts.Length);      // Two words preserved
-            Assert.Equal("ಕ", parts[0]);        // First word
-            // Note: gÀä produces different output based on actual mappings
+            Assert.Equal(2, parts.Length);
+            Assert.Equal("ಕ", parts[0]);
         }
 
-        // Combined preprocessing scenarios
+        // =====================================================
+        // PREPROCESSING: MULTIPLE WORDS
+        // =====================================================
+
         [Theory]
-        [InlineData("PÀÀ gÀå", "ಕ ರ‍್ಯ")]        // First word: ÀÀ→À, Second word: gÀå
-        [InlineData("PPÀÀ zzÀä", "ಕ ದ್ಮ")]        // Duplicates collapsed in both words (zzÀä → ದ್ಮ)
+        [MemberData(nameof(PreprocessingMultiWordCases))]
         public void ConvertAsciiToUnicode_Should_Handle_Duplicate_Collapse_In_Multiple_Words(string ascii, string expectedUnicode)
         {
             var result = _converter.ConvertAsciiToUnicode(ascii);
