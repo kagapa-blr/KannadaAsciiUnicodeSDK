@@ -272,7 +272,8 @@ public class KannadaAsciiConverter
         string lastLetter = letters.Count > 0 ? letters[letters.Count - 1] : "";
         string secondLast = letters.Count > 1 ? letters[letters.Count - 2] : "";
 
-        if (_dependentVowels.Contains(lastLetter))
+        // BUG FIX: Ensure we have at least 1 element before trying to replace it
+        if (_dependentVowels.Contains(lastLetter) && letters.Count > 0)
         {
             // If last letter is dependent vowel, replace with ZWJ + halant
             letters[letters.Count - 1] = "\u200D\u0CCD"; // ZWJ + Halant
@@ -281,7 +282,7 @@ public class KannadaAsciiConverter
         }
         else
         {
-            // No dependent vowel
+            // No dependent vowel, just append
             letters.Add("\u0CCD");
             letters.Add(_vattaksharagalu[t]);
         }
@@ -294,18 +295,26 @@ public class KannadaAsciiConverter
         string lastLetter = letters.Count > 0 ? letters[letters.Count - 1] : "";
         string secondLast = letters.Count > 1 ? letters[letters.Count - 2] : "";
 
-        if (_dependentVowels.Contains(lastLetter))
+        // BUG FIX: Ensure we have enough elements before accessing indices
+        if (_dependentVowels.Contains(lastLetter) && letters.Count >= 2)
         {
+            // Safe to access letters[letters.Count - 2]
             letters[letters.Count - 2] = _asciiArkavattu[t];
             letters[letters.Count - 1] = "\u0CCD"; // Halant only (no ZWJ)
             letters.Add(secondLast);
             letters.Add(lastLetter);
         }
-        else
+        else if (letters.Count > 0)
         {
+            // Safe to access letters[letters.Count - 1]
             letters[letters.Count - 1] = _asciiArkavattu[t];
             letters.Add("\u0CCD"); // Halant only (no ZWJ)
             letters.Add(lastLetter);
+        }
+        else
+        {
+            // Edge case: empty letters list, just add the character as-is
+            letters.Add(_asciiArkavattu[t]);
         }
 
         return letters;
