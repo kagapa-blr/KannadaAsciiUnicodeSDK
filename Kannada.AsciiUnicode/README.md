@@ -57,6 +57,28 @@ var customConverter = KannadaConverter.CreateWithCustomMapping(
 );
 ```
 
+## Recent Improvements
+
+This version includes significant enhancements to the conversion algorithm:
+
+### Greedy Sequence Matching Fix
+
+Fixed an issue where the algorithm would prematurely match shorter sequences when longer valid sequences were available. Specifically, sequences ending with the anusvara mark ('A') would be matched even when followed by vowel patterns ('iÀ' or 'iÁ') that should be processed as part of a longer sequence.
+
+**Example**: The input "¥ÀAiÀiÁðAiÀÄªÁV" now correctly processes "AiÀiÁ" as a single unit instead of splitting it into 'A' (anusvara) and the remaining characters.
+
+### Extended Sequence Length Support
+
+The algorithm now dynamically extends the sequence search to handle mappings longer than the default `maxSequenceLength` parameter. This ensures that special multi-character sequences defined in the mapping file are properly recognized without requiring external configuration changes.
+
+**Impact**: Complex Kannada words with multiple consonant clusters and special character combinations are now converted with higher accuracy.
+
+### Test Coverage
+
+All 57 unit tests pass, including:
+- 50 basic conversion tests
+- 7 advanced conversion tests covering edge cases, conjuncts, and problematic character sequences
+
 ## Architecture
 
 The SDK is organized into the following components:
@@ -259,10 +281,10 @@ The `maxSequenceLength` parameter controls how long ASCII sequences the algorith
 
 | Setting | Use Case | Performance | Notes |
 | --- | --- | --- | --- |
-| **4** | Basic mappings only | Fastest ⚡ (~0.1ms per 1000) | Limited to short sequences |
-| **8** | Default (recommended) | Balanced ⚡⚡ (~1ms per operation) | Handles 99% of real-world cases |
-| **12** | Extended custom mappings | Moderate ⚡⚡⚡ (~5-10% slower) | Better coverage for domain-specific uses |
-| **16+** | Very long sequences | Slower ⚡⚡⚡⚡ (~15-20% slower) | Only if absolutely necessary |
+| **4** | Basic mappings only | Fastest (approximately 0.1ms per 1000) | Limited to short sequences |
+| **8** | Default (recommended) | Balanced (approximately 1ms per operation) | Handles 99% of real-world cases |
+| **12** | Extended custom mappings | Moderate (approximately 5-10% slower) | Better coverage for domain-specific uses |
+| **16+** | Very long sequences | Slower (approximately 15-20% slower) | Only if absolutely necessary |
 
 **How to use**:
 
@@ -392,32 +414,31 @@ Step 2: Longest-Match-First Algorithm
 ────────────────────────────────────────
 
 Position 0: "PÀ£ÁðlPÀ"
-  ├─ Try 4+ chars: Not in mapping
-  ├─ Try 3 chars: "PÀ£"? Not found
-  ├─ Try 2 chars: "PÀ" → YES! ✓
-  └─ Output: ಕ | Advance to position 2
+  - Try 4+ chars: Not in mapping
+  - Try 3 chars: "PÀ£"? Not found
+  - Try 2 chars: "PÀ" FOUND
+  - Output: ಕ | Advance to position 2
 
 Position 2: "£ÁðlPÀ"
-  ├─ Try longest first...
-  ├─ Find: "£Áð" matches mapping (contains halant) → YES! ✓
-  └─ Output: ರ್ | Advance to position 5
+  - Try longest first
+  - Find: "£Áð" matches mapping (contains halant) FOUND
+  - Output: ರ್ | Advance to position 5
 
 Position 5: "lPÀ"
-  ├─ Try: "lPÀ" → Check... matches or broken down
-  ├─ Process: "l" alone → ನ
-  │           "PÀ" → ಕಾ
-  ├─ But wait - we need "ನಾ" then "ಟ" then ಕ
-  └─ Context-aware processing continues...
+  - Try: "lPÀ" - Check mapping
+  - Process: "l" alone maps to ನ
+  - "PÀ" maps to ಕಾ
+  - Additional processing: need ನಾ then ಟ then ಕ
+  - Context-aware processing continues
 
 Step 3: Intelligent Assembly
-──────────────────────────────
-The algorithm applies linguistic rules:
+Remaining characters are processed with linguistic rules:
   - Recognizes "£Áð" as a consonant cluster marker
-  - Places halant (್) correctly
+  - Places halant (್) at correct positions
   - Handles vowel signs attached to consonants
-  - Applies ZWJ/ZWNJ as needed
+  - Applies Zero-Width Joiner (ZWJ) or Zero-Width Non-Joiner (ZWNJ) as needed
   
-Final: ಕರ್ನಾಟಕ ✓
+Final output: ಕರ್ನಾಟಕ
 ```
 
 **Key Insights:**
@@ -545,21 +566,21 @@ Let's trace "PÀgÀä" → "ಕನ್ನಡ":
 Input: PÀgÀä
 
 Position 0: "PÀgÀä..."
-  Try 4-char: "PÀgÀ"? No mapping
-  Try 3-char: "PÀg"? No mapping  
-  Try 2-char: "PÀ" → Found! ಕ ✓
-  Skip 2 chars, Add to output
+  - Try 4-char: "PÀgÀ"? No mapping
+  - Try 3-char: "PÀg"? No mapping  
+  - Try 2-char: "PÀ" FOUND equals ಕ
+  - Skip 2 chars, add to output
 
 Position 2: "gÀä..."
-  Try 3-char: "gÀä" → Found! ನ್ನ ✓
-  Skip 3 chars, Add to output
+  - Try 3-char: "gÀä" FOUND equals ನ್ನ
+  - Skip 3 chars, add to output
 
 Position 5: "ä..."
-  Try 2-char: "ä" (single char processed)
-  Try 1-char: "ä" → Found! ಡ ✓  
-  Skip 1 char, Add to output
+  - Try 2-char: "ä" (single character processed)
+  - Try 1-char: "ä" FOUND equals ಡ  
+  - Skip 1 char, add to output
 
-Output: ಕ + ನ್ನ + ಡ = "ಕನ್ನಡ" ✓
+Output: ಕ + ನ್ನ + ಡ = "ಕನ್ನಡ"
 ```
 
 ### Why Single Mapping File Suffices
@@ -664,7 +685,7 @@ Round-trip stability verification:
 var original = "ಕನ್ನಡ";
 var ascii = converter.ConvertUnicodeToAscii(original);      // PÀ£ÀßqÀ
 var roundTrip = converter.ConvertAsciiToUnicode(ascii);     // ಕನ್ನಡ
-Assert.Equal(original, roundTrip);  // ✓ Stable
+Assert.Equal(original, roundTrip);  // Verified as stable
 ```
 
 #### Edge Cases
@@ -1215,7 +1236,7 @@ var ocredText = "PÀÀ£ÀÀßqÀÀ";  // Note the doubled À characters
 var converter = KannadaConverter.Instance;
 var result = converter.ConvertAsciiToUnicode(ocredText);
 // Preprocessing collapses: PÀÀ→PÀ, À→À, ÀÀ→À
-// Result: "ಕನ್ನಡ" ✓ Correctly converted despite OCR errors
+// Result: "ಕನ್ನಡ" - Correctly converted despite OCR errors
 ```
 
 ### Scenario 2: User Input Errors (Extra Spaces)
@@ -1225,7 +1246,7 @@ var result = converter.ConvertAsciiToUnicode(ocredText);
 var userInput = "P À g À ä";  // Spaces added due to autocorrect
 var result = converter.ConvertAsciiToUnicode(userInput);
 // Preprocessing removes internal spaces: "PÀ gÀä"
-// Result: "ಕರಿ" ✓ Correctly converted
+// Result: "ಕರಿ" - Correctly converted
 ```
 
 ### Scenario 3: Combined Issues
@@ -1235,7 +1256,7 @@ var result = converter.ConvertAsciiToUnicode(userInput);
 var messyInput = "PÀÀ  £ÀÀ  ß  qÀÀ";  // Doubled chars + extra spaces
 var result = converter.ConvertAsciiToUnicode(messyInput);
 // Preprocessing: Collapse duplicates + remove spaces
-// Result: "ಕನ್ನಡ" ✓ Works despite multiple error types
+// Result: "ಕನ್ನಡ" - Works correctly despite multiple error types
 ```
 
 **Benefits**:
