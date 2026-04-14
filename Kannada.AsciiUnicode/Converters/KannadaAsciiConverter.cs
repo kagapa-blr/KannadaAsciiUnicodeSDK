@@ -202,15 +202,22 @@ public class KannadaAsciiConverter
         int maxLen = _maxSequenceLength;
         int remaining = txt.Length - currentPos;
 
-        if (remaining < _maxSequenceLength + 1)
-        {
-            maxLen = remaining - 1;
-        }
+        // Ensure we check all possible length sequences within bounds
+        // The _maxSequenceLength is a default guideline, but the algorithm should still be able
+        // to match longer valid sequences that exist in the mappings (for cases not anticipated by the default)
+        int maxPossibleLen = remaining - 1;
 
-        int n = 0;
+        // Use maxLen as normal, but if we reach the end of a potential match with maxLen,
+        // still try longer sequences if they exist
+        maxLen = maxLen < maxPossibleLen ? maxLen : maxPossibleLen;
 
-        // Try from longest to shortest match
-        for (int i = maxLen; i >= 0; i--)
+        string matchedSequence = "";
+        string matchedValue = "";
+        int matchedLen = -1;
+
+        // Try from longest (full remaining) to shortest match
+        // This allows capturing sequences longer than _maxSequenceLength when they're legitimately in the mapping
+        for (int i = maxPossibleLen; i >= 0; i--)
         {
             int substrTill = currentPos + i + 1;
 
@@ -221,47 +228,76 @@ public class KannadaAsciiConverter
 
             if (_mapping.ContainsKey(t))
             {
-                // Direct mapping found
+                // BUGFIX: Check if matching this sequence would unnecessarily fragment valid longer sequences
+                // Specifically: don't match sequences ending in "A" if they would prevent "AiÀ..."patterns from matching
 
-                // Add ZWJ if previous ends with halant
-                if (op.Count > 0)
+                bool shouldSkipThisMatch = false;
+
+                // If sequence ends with "A", check what comes next
+                if (t.EndsWith("A") && currentPos + t.Length < txt.Length)
                 {
-                    string lastChar = op[op.Count - 1];
-                    if (lastChar.EndsWith('\u0CCD'.ToString())) // Halant
+                    // Get the substring starting after this match
+                    string afterThisMatch = txt.Substring(currentPos + t.Length);
+
+                    // Check if "A" + afterThisMatch forms a valid longer sequence
+                    // that should have consumed the "A"
+                    if (afterThisMatch.Length >= 2 && (afterThisMatch.StartsWith("iÀ") || afterThisMatch.StartsWith("iÁ")))
                     {
-                        op.Add("\u200D"); // ZWJ
+                        // Pattern is like "...AiÀ..." which should not be split
+                        // So don't match the sequence ending in "A"
+                        shouldSkipThisMatch = true;
                     }
                 }
 
-                op.Add(_mapping[t]);
-                n = i;
-                return (n, op);
+                if (shouldSkipThisMatch)
+                {
+                    continue; // Skip this match, try shorter ones
+                }
+
+                // This match is valid
+                matchedLen = i;
+                matchedSequence = t;
+                matchedValue = _mapping[t];
+                break; // Found best match, exit loop
+            }
+        }
+
+        // If we found a match, apply it
+        if (matchedLen >= 0)
+        {
+            // Add ZWJ if previous ends with halant
+            if (op.Count > 0)
+            {
+                string lastChar = op[op.Count - 1];
+                if (lastChar.EndsWith('\u0CCD'.ToString())) // Halant
+                {
+                    op.Add("\u200D"); // ZWJ
+                }
             }
 
-            // If not last iteration, continue
-            if (i > 0)
-                continue;
+            op.Add(matchedValue);
+            return (matchedLen, op);
+        }
 
-            // No mapping found - try special cases
-            var letters = op.Join("").ToList();
-            string singleChar = txt[currentPos].ToString();
+        // No mapping found - try special cases
+        var letters = op.Join("").ToList();
+        string singleChar = txt[currentPos].ToString();
 
-            if (_asciiArkavattu.ContainsKey(singleChar))
-            {
-                op = ProcessArkavattu(letters, singleChar);
-            }
-            else if (_vattaksharagalu.ContainsKey(singleChar))
-            {
-                op = ProcessVattakshara(letters, singleChar);
-            }
-            else if (_brokenCases.ContainsKey(singleChar))
-            {
-                op = ProcessBrokenCases(letters, singleChar);
-            }
-            else
-            {
-                op.Add(singleChar);
-            }
+        if (_asciiArkavattu.ContainsKey(singleChar))
+        {
+            op = ProcessArkavattu(letters, singleChar);
+        }
+        else if (_vattaksharagalu.ContainsKey(singleChar))
+        {
+            op = ProcessVattakshara(letters, singleChar);
+        }
+        else if (_brokenCases.ContainsKey(singleChar))
+        {
+            op = ProcessBrokenCases(letters, singleChar);
+        }
+        else
+        {
+            op.Add(singleChar);
         }
 
         return (0, op);
