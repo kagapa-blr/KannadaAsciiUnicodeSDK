@@ -35,7 +35,8 @@ namespace Kannada.AsciiUnicode.Converters
         {
             // Load default mappings
             var (defaultMapping, brokenCases, vattaksharagalu, asciiArkavattu,
-                 dependentVowels, ignoreList, reverseMapping) = KannadaMappingLoader.LoadMappings();
+                 dependentVowels, ignoreList, collapseDuplicateCharacters,
+                 removeInternalSpaces, reverseMapping) = KannadaMappingLoader.LoadMappings();
 
             // Merge custom mappings if provided
             if (customMapping != null && customMapping.Count > 0)
@@ -55,6 +56,8 @@ namespace Kannada.AsciiUnicode.Converters
                 asciiArkavattu,
                 dependentVowels,
                 ignoreList,
+                collapseDuplicateCharacters,
+                removeInternalSpaces,
                 reverseMapping,
                 maxSequenceLength
             );

@@ -18,6 +18,8 @@ namespace Kannada.AsciiUnicode.Mappings
             Dictionary<string, string> asciiArkavattu,
             HashSet<string> dependentVowels,
             HashSet<string> ignoreList,
+            Dictionary<string, string> collapseDuplicateCharacters,
+            Dictionary<string, string> removeInternalSpaces,
             Dictionary<string, string> reverseMapping)
         LoadMappings()
         {
@@ -26,6 +28,7 @@ namespace Kannada.AsciiUnicode.Mappings
 
             var mapping = LoadDictionary(root, "mapping");
             var reverseMapping = CreateReverseMapping(mapping);
+            var preprocessingRules = root["preprocessingRules"] as JObject;
 
             return (
                 mapping,
@@ -34,6 +37,8 @@ namespace Kannada.AsciiUnicode.Mappings
                 LoadDictionary(root, "asciiArkavattu"),
                 LoadHashSet(root, "dependentVowels"),
                 LoadHashSet(root, "ignoreList"),
+                LoadOptionalDictionary(preprocessingRules, "collapseDuplicateCharacters"),
+                LoadOptionalDictionary(preprocessingRules, "removeInternalSpaces"),
                 reverseMapping
             );
         }
@@ -101,6 +106,20 @@ namespace Kannada.AsciiUnicode.Mappings
                 );
 
             return new HashSet<string>(list);
+        }
+
+        private static Dictionary<string, string> LoadOptionalDictionary(
+            JObject? parent,
+            string propertyName)
+        {
+            if (parent == null)
+                return new Dictionary<string, string>();
+
+            var token = parent[propertyName];
+            if (token == null)
+                return new Dictionary<string, string>();
+
+            return token.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
         }
 
         private static Dictionary<string, BrokenCaseInfo>

@@ -6,6 +6,36 @@
       "description": "Simple consonant"
     },
     {
+      "ascii": "««zsÀ",
+      "unicode": "ವಿವಿಧ",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "gÁµÀÖç",
+      "unicode": "ರಾಷ್ಟ್ರ",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "¸ÁPÁëzÀÝøµÀÖ",
+      "unicode": "ಸಾಕ‍್ಷಾದ್ದೃಷ್ಟ",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "PÉÆ¾vÉ",
+      "unicode": "ಕೊಱತೆ",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "¹ÛçÃAiÀÄgÀÄ",
+      "unicode": "ಸ್ತ್ರೀಯರು",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "ªÀÄÄ",
+      "unicode": "ಮು",
+      "description": "Simple consonant"
+    },
+    {
       "ascii": "CA",
       "unicode": "ಅಂ",
       "description": "Vowel with anusvara"
@@ -40,53 +70,46 @@
       "unicode": "ಎಂಬ",
       "description": "Commonly used word"
     },
-
-    
-  {
-    "ascii": "¹zÀÝgÁªÀÄAiÀÄå",
-    "unicode": "ಸಿದ್ದರಾಮಯ್ಯ",
-    "description": "Proper noun (name)"
-  },
-  {
-    "ascii": "EAVèµï",
-    "unicode": "ಇಂಗ್ಲಿಷ್",
-    "description": "Language name"
-  },
-  {
-    "ascii": "gÁ¶ÖçÃAiÀÄ",
-    "unicode": "ರಾಷ್ಟ್ರೀಯ",
-    "description": "Common word (national)"
-  },
-  {
-    "ascii": "ªÀ®AiÀÄzÀ°èAiÀÄÆ",
-    "unicode": "ವಲಯದಲ‍್ಲಿಯೂ",
-    "description": "Common word"
-  },
-  {
-    "ascii": "CdAiÀiï",
-    "unicode": "ಅಜಯ್",
-    "description": "Proper noun (name)"
-  },
-  {
-    "ascii": "¸ÀzÁ±ÀAiÀÄ¢AzÀ",
-    "unicode": "ಸದಾಶಯದಿಂದ",
-    "description": "Common word"
-  },
-  {
-    "ascii": "¥ÀAiÀiÁðAiÀÄªÁV",
-    "unicode": "ಪರ್ಯಾಯವಾಗಿ",
-    "description": "Common word"
-  },
-  {
-    "ascii": "±Á¸ÀÛæ§zÀÝ",
-    "unicode": "ಶಾಸ್ತ್ರಬದ್ದ",
-    "description": "Common word"
-  }
-
-
-
-
-  
+    {
+      "ascii": "¹zÀÝgÁªÀÄAiÀÄå",
+      "unicode": "ಸಿದ್ದರಾಮಯ್ಯ",
+      "description": "Proper noun (name)"
+    },
+    {
+      "ascii": "EAVèµï",
+      "unicode": "ಇಂಗ್ಲಿಷ್",
+      "description": "Language name"
+    },
+    {
+      "ascii": "gÁ¶ÖçÃAiÀÄ",
+      "unicode": "ರಾಷ್ಟ್ರೀಯ",
+      "description": "Common word (national)"
+    },
+    {
+      "ascii": "ªÀ®AiÀÄzÀ°èAiÀÄÆ",
+      "unicode": "ವಲಯದಲ‍್ಲಿಯೂ",
+      "description": "Common word"
+    },
+    {
+      "ascii": "CdAiÀiï",
+      "unicode": "ಅಜಯ್",
+      "description": "Proper noun (name)"
+    },
+    {
+      "ascii": "¸ÀzÁ±ÀAiÀÄ¢AzÀ",
+      "unicode": "ಸದಾಶಯದಿಂದ",
+      "description": "Common word"
+    },
+    {
+      "ascii": "¥ÀAiÀiÁðAiÀÄªÁV",
+      "unicode": "ಪರ್ಯಾಯವಾಗಿ",
+      "description": "Common word"
+    },
+    {
+      "ascii": "±Á¸ÀÛæ§zÀÝ",
+      "unicode": "ಶಾಸ್ತ್ರಬದ್ದ",
+      "description": "Common word"
+    }
   ],
   "asciiToUnicodeAdvanced": [
     {
@@ -179,9 +202,6 @@
       "unicode": "ಷ್",
       "description": "Retroflex consonant with halant"
     }
-
-
-
   ],
   "asciiToUnicodeRealWords": [
     {

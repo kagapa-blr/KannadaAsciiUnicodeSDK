@@ -17,6 +17,10 @@ public class KannadaAsciiConverter
     private readonly Dictionary<string, string> _asciiArkavattu;
     private readonly HashSet<string> _dependentVowels;
     private readonly HashSet<string> _ignoreList;
+    private readonly Dictionary<string, string> _collapseDuplicateCharacters;
+    private readonly Dictionary<string, string> _removeInternalSpaces;
+    private readonly HashSet<string> _mappingKeyPrefixes;
+    private readonly int _maxMappingKeyLength;
     private readonly Dictionary<string, string> _reverseMapping;
     private readonly int _maxSequenceLength;
 
@@ -29,6 +33,8 @@ public class KannadaAsciiConverter
     /// <param name="asciiArkavattu">Subjoined consonants (no ZWJ required)</param>
     /// <param name="dependentVowels">Unicode characters that are vowel signs</param>
     /// <param name="ignoreList">Characters to skip during conversion</param>
+    /// <param name="collapseDuplicateCharacters">Rule-based duplicate collapse patterns</param>
+    /// <param name="removeInternalSpaces">Rule-based internal space removal patterns</param>
     /// <param name="reverseMapping">Unicode to ASCII reverse mappings for bidirectional conversion</param>
     /// <param name="maxSequenceLength">Maximum ASCII sequence length to match (default 8).
     /// Adjust based on your longest mappings. Higher values may slightly impact performance.</param>
@@ -39,6 +45,8 @@ public class KannadaAsciiConverter
         Dictionary<string, string> asciiArkavattu,
         HashSet<string> dependentVowels,
         HashSet<string> ignoreList,
+        Dictionary<string, string> collapseDuplicateCharacters,
+        Dictionary<string, string> removeInternalSpaces,
         Dictionary<string, string> reverseMapping,
         int maxSequenceLength = 8)
     {
@@ -48,8 +56,79 @@ public class KannadaAsciiConverter
         _asciiArkavattu = asciiArkavattu;
         _dependentVowels = dependentVowels;
         _ignoreList = ignoreList;
+        _collapseDuplicateCharacters = collapseDuplicateCharacters;
+        _removeInternalSpaces = removeInternalSpaces;
+        (_mappingKeyPrefixes, _maxMappingKeyLength) = BuildMappingKeyPrefixes(mapping);
         _reverseMapping = reverseMapping;
         _maxSequenceLength = maxSequenceLength > 0 ? maxSequenceLength : 8;  // Validate: default to 8 if invalid
+    }
+
+    private static (HashSet<string> prefixes, int maxLength) BuildMappingKeyPrefixes(
+        Dictionary<string, string> mapping)
+    {
+        var prefixes = new HashSet<string>();
+        int maxLength = 0;
+
+        foreach (var key in mapping.Keys)
+        {
+            maxLength = Math.Max(maxLength, key.Length);
+            for (int length = 1; length <= key.Length; length++)
+            {
+                prefixes.Add(key.Substring(0, length));
+            }
+        }
+
+        return (prefixes, maxLength);
+    }
+
+    private bool ShouldPreserveDuplicateSequence(string word, int currentPosition)
+    {
+        // Preserve duplicates when the second (or later) occurrence is the start
+        // of a valid mapping sequence. Look forward from the duplicate position
+        // to see if any mapping prefix begins there; if so, we should keep
+        // the duplicate so the mapping algorithm can match the longer sequence.
+        int duplicateStart = currentPosition + 1;
+
+        if (duplicateStart >= word.Length)
+            return false;
+
+        // Backward-looking check: if any mapping prefix ends at the duplicate
+        // position (i.e., the duplicate is required to form an existing mapping
+        // that spans earlier characters), preserve duplicates.
+        int startWindow = Math.Max(0, currentPosition - _maxMappingKeyLength + 1);
+        int duplicateEnd = duplicateStart;
+
+        for (int start = startWindow; start <= currentPosition; start++)
+        {
+            int length = duplicateEnd - start + 1;
+            if (length <= 0 || length > _maxMappingKeyLength)
+                continue;
+
+            string segment = word.Substring(start, length);
+            if (_mappingKeyPrefixes.Contains(segment))
+                return true;
+        }
+
+        // Forward vowel heuristic: only preserve when the duplicated character
+        // itself is a standalone mapping whose value ends with a dependent vowel.
+        string dupChar = word[currentPosition].ToString();
+        if (!_mapping.TryGetValue(dupChar, out string? dupMappingValue) || string.IsNullOrEmpty(dupMappingValue))
+            return false;
+
+        bool endsWithDependentVowel = _dependentVowels.Any(v => dupMappingValue.EndsWith(v));
+        if (!endsWithDependentVowel)
+            return false;
+
+        int maxLookahead = Math.Min(_maxMappingKeyLength, word.Length - duplicateStart);
+
+        for (int len = 1; len <= maxLookahead; len++)
+        {
+            string segment = word.Substring(duplicateStart, len);
+            if (_mappingKeyPrefixes.Contains(segment))
+                return true;
+        }
+
+        return false;
     }
 
     public string Convert(string text)
@@ -59,7 +138,7 @@ public class KannadaAsciiConverter
 
         foreach (var word in words)
         {
-            // Preprocess: collapse duplicates and clean input
+            // Preprocess: apply rule-defined duplicate collapse and internal-space cleanup
             var preprocessed = PreprocessAsciiInput(word);
             processedWords.Add(ProcessWord(preprocessed));
         }
@@ -92,20 +171,56 @@ public class KannadaAsciiConverter
         if (string.IsNullOrEmpty(word))
             return word;
 
-        // Remove internal spaces
-        word = word.Replace(" ", "");
-
-        // Collapse duplicate consecutive characters
-        var result = new StringBuilder();
-        char lastChar = '\0';
-
-        foreach (char c in word)
+        if (_removeInternalSpaces.Count > 0)
         {
-            // Only add if different from last character
-            if (c != lastChar)
+            foreach (var kvp in _removeInternalSpaces)
             {
-                result.Append(c);
-                lastChar = c;
+                if (word.Contains(kvp.Key))
+                {
+                    word = word.Replace(kvp.Key, kvp.Value);
+                }
+            }
+        }
+
+        if (_collapseDuplicateCharacters.Count > 0)
+        {
+            foreach (var kvp in _collapseDuplicateCharacters)
+            {
+                if (word.Contains(kvp.Key))
+                {
+                    word = word.Replace(kvp.Key, kvp.Value);
+                }
+            }
+        }
+
+        var result = new StringBuilder();
+        int position = 0;
+
+        while (position < word.Length)
+        {
+            if (position + 1 < word.Length && word[position] == word[position + 1])
+            {
+                if (ShouldPreserveDuplicateSequence(word, position))
+                {
+                    result.Append(word[position]);
+                    position++;
+                }
+                else
+                {
+                    var currentChar = word[position];
+                    result.Append(currentChar);
+                    position++;
+
+                    while (position < word.Length && word[position] == currentChar)
+                    {
+                        position++; // collapse all consecutive duplicate characters
+                    }
+                }
+            }
+            else
+            {
+                result.Append(word[position]);
+                position++;
             }
         }
 
