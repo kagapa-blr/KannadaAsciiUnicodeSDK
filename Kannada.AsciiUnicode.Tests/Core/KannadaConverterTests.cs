@@ -81,6 +81,15 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Equal("12345", result);
         }
 
+        [Fact]
+        public void ConvertAsciiToUnicode_Should_Be_Compatible_With_Func_String_String_Delegates()
+        {
+            Func<string, string> convert = _converter.ConvertAsciiToUnicode;
+            var result = convert("PÀ");
+
+            Assert.Equal("ಕ", result);
+        }
+
         // =====================================================
         // UNICODE → ASCII CONVERSION
         // =====================================================
@@ -91,6 +100,15 @@ namespace Kannada.AsciiUnicode.Tests.Core
         {
             var result = _converter.ConvertUnicodeToAscii(unicode);
             Assert.Equal(expectedAscii, result);
+        }
+
+        [Fact]
+        public void ConvertUnicodeToAscii_Should_Be_Compatible_With_Func_String_String_Delegates()
+        {
+            Func<string, string> convert = _converter.ConvertUnicodeToAscii;
+            var result = convert("ಕ");
+
+            Assert.Equal("PÀ", result);
         }
 
         // =====================================================

@@ -64,13 +64,23 @@ namespace Kannada.AsciiUnicode.Converters
             );
         }
 
-        public string ConvertAsciiToUnicode(string asciiText, bool convertToEnglishDigit = false)
+        public string ConvertAsciiToUnicode(string asciiText)
+        {
+            return ConvertAsciiToUnicode(asciiText, convertToEnglishDigit: false);
+        }
+
+        public string ConvertAsciiToUnicode(string asciiText, bool convertToEnglishDigit)
         {
             if (asciiText == null) throw new ArgumentNullException(nameof(asciiText));
             return string.IsNullOrEmpty(asciiText) ? string.Empty : _converter.Convert(asciiText, convertToEnglishDigit);
         }
 
-        public string ConvertUnicodeToAscii(string unicodeText, bool convertToEnglishDigit = false)
+        public string ConvertUnicodeToAscii(string unicodeText)
+        {
+            return ConvertUnicodeToAscii(unicodeText, convertToEnglishDigit: false);
+        }
+
+        public string ConvertUnicodeToAscii(string unicodeText, bool convertToEnglishDigit)
         {
             if (unicodeText == null) throw new ArgumentNullException(nameof(unicodeText));
             return string.IsNullOrEmpty(unicodeText) ? string.Empty : _converter.ReverseConvert(unicodeText, convertToEnglishDigit);

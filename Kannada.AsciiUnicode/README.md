@@ -9,13 +9,13 @@ Core library documentation for the Kannada ASCII to Unicode converter SDK. For g
 Add the NuGet package to your project:
 
 ```bash
-dotnet add package Kannada.AsciiUnicode
+dotnet add package KannadaAsciiUnicodeSDK
 ```
 
 Or via Package Manager:
 
 ```bash
-Install-Package Kannada.AsciiUnicode
+Install-Package KannadaAsciiUnicodeSDK
 ```
 
 ### Basic Usage
@@ -34,9 +34,12 @@ Console.WriteLine(unicode); // ಕನ್ನಡ
 string ascii = converter.ConvertUnicodeToAscii("ಕನ್ನಡ");
 Console.WriteLine(ascii); // PÀ£ÀßqÀ
 
-// Optional: output English digits instead of Kannada digits
+// Optional: emit English digits instead of Kannada digits
 string englishDigits = converter.ConvertAsciiToUnicode("12345", convertToEnglishDigit: true);
 Console.WriteLine(englishDigits); // 12345
+
+// Single-argument calls remain supported for older code paths
+string plain = converter.ConvertAsciiToUnicode("PÀ");
 ```
 
 ### With Configurable Max Sequence Length
@@ -96,7 +99,7 @@ Repeated punctuation and symbol characters such as `||` are preserved during pre
 
 ### Test Coverage
 
-All 69 unit tests pass, including:
+All 71 unit tests pass, including:
 - basic conversion tests
 - advanced conversion tests covering edge cases, conjuncts, problematic character sequences, and digit handling
 
@@ -138,8 +141,10 @@ public sealed class KannadaConverter : IAsciiUnicodeConverter
     );
 
     // Conversion methods
-    public string ConvertAsciiToUnicode(string asciiText, bool convertToEnglishDigit = false);
-    public string ConvertUnicodeToAscii(string unicodeText, bool convertToEnglishDigit = false);
+    public string ConvertAsciiToUnicode(string asciiText);
+    public string ConvertAsciiToUnicode(string asciiText, bool convertToEnglishDigit);
+    public string ConvertUnicodeToAscii(string unicodeText);
+    public string ConvertUnicodeToAscii(string unicodeText, bool convertToEnglishDigit);
     public string Convert(string text, KannadaAsciiFormat format, bool convertToEnglishDigit = false);
 }
 ```

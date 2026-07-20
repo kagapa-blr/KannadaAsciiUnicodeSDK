@@ -14,7 +14,8 @@ The Kannada ASCII to Unicode Converter provides robust bidirectional conversion 
 - Support for optional custom mappings
 - Zero external dependencies
 - Optimized for performance
-- 18+ unit tests with 100% pass rate
+- Optional digit handling with Kannada digits preserved by default
+- 71+ unit tests with 100% pass rate
 
 ## Installation
 
@@ -53,6 +54,10 @@ string unicode = converter.ConvertAsciiToUnicode("PÀ");
 // Unicode to ASCII
 string ascii = converter.ConvertUnicodeToAscii("ಕ");
 // Output: "PÀ"
+
+// Optional: emit English digits instead of Kannada digits
+string englishDigits = converter.ConvertAsciiToUnicode("12345", convertToEnglishDigit: true);
+// Output: "12345"
 ```
 
 ### Custom Mappings
@@ -84,9 +89,11 @@ Note: Custom ASCII to Unicode mappings are automatically reversed for Unicode to
 - `CreateWithCustomMapping(Dictionary<string, string>?)` - Creates converter with optional custom mappings
 
 **Instance Methods:**
-- `ConvertAsciiToUnicode(string)` - Converts ASCII text to Kannada Unicode
+- `ConvertAsciiToUnicode(string)` - Converts ASCII text to Kannada Unicode using the default behavior
+- `ConvertAsciiToUnicode(string, bool)` - Converts ASCII text to Kannada Unicode and optionally emits English digits
 - `ConvertUnicodeToAscii(string)` - Converts Kannada Unicode to ASCII format
-- `Convert(string, KannadaAsciiFormat)` - Routes conversion based on format (Nudi/Baraha)
+- `ConvertUnicodeToAscii(string, bool)` - Converts Kannada Unicode to ASCII format and optionally uses English digits
+- `Convert(string, KannadaAsciiFormat, bool = false)` - Routes conversion based on format (Nudi/Baraha)
 
 ## Supported Formats
 
@@ -146,7 +153,7 @@ dotnet test
 
 Expected output:
 ```
-Test summary: total: 18, failed: 0, succeeded: 18
+Test summary: total: 71, failed: 0, succeeded: 71
 ```
 
 ### Run Test Application

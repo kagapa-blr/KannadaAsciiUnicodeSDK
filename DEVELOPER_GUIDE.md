@@ -139,6 +139,7 @@ Follow these guidelines:
 - **Comments:** Document complex logic clearly
 - **Single Responsibility:** Keep methods focused on one task
 - **Error Handling:** Use appropriate exception types
+- **Backward Compatibility:** Preserve existing single-argument call patterns when adding new optional parameters, and update the documentation to reflect the supported overloads
 
 ### 3. Add or Update Tests
 
