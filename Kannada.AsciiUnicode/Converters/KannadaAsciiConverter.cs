@@ -19,6 +19,7 @@ public class KannadaAsciiConverter
     private readonly HashSet<string> _ignoreList;
     private readonly Dictionary<string, string> _collapseDuplicateCharacters;
     private readonly Dictionary<string, string> _removeInternalSpaces;
+    private readonly Dictionary<string, string> _additionalMappings;
     private readonly HashSet<string> _mappingKeyPrefixes;
     private readonly int _maxMappingKeyLength;
     private readonly Dictionary<string, string> _reverseMapping;
@@ -36,6 +37,7 @@ public class KannadaAsciiConverter
     /// <param name="collapseDuplicateCharacters">Rule-based duplicate collapse patterns</param>
     /// <param name="removeInternalSpaces">Rule-based internal space removal patterns</param>
     /// <param name="reverseMapping">Unicode to ASCII reverse mappings for bidirectional conversion</param>
+    /// <param name="additionalMappings">Optional extra ASCII-to-Unicode aliases used as generic fallbacks for missing core mappings</param>
     /// <param name="maxSequenceLength">Maximum ASCII sequence length to match (default 8).
     /// Adjust based on your longest mappings. Higher values may slightly impact performance.</param>
     public KannadaAsciiConverter(
@@ -48,6 +50,7 @@ public class KannadaAsciiConverter
         Dictionary<string, string> collapseDuplicateCharacters,
         Dictionary<string, string> removeInternalSpaces,
         Dictionary<string, string> reverseMapping,
+        Dictionary<string, string>? additionalMappings = null,
         int maxSequenceLength = 8)
     {
         _mapping = mapping;
@@ -58,6 +61,7 @@ public class KannadaAsciiConverter
         _ignoreList = ignoreList;
         _collapseDuplicateCharacters = collapseDuplicateCharacters;
         _removeInternalSpaces = removeInternalSpaces;
+        _additionalMappings = additionalMappings ?? new Dictionary<string, string>();
         (_mappingKeyPrefixes, _maxMappingKeyLength) = BuildMappingKeyPrefixes(mapping);
         _reverseMapping = reverseMapping;
         _maxSequenceLength = maxSequenceLength > 0 ? maxSequenceLength : 8;  // Validate: default to 8 if invalid
@@ -131,7 +135,7 @@ public class KannadaAsciiConverter
         return false;
     }
 
-    public string Convert(string text)
+    public string Convert(string text, bool convertToEnglishDigit = false)
     {
         var words = text.Split(' ');
         var processedWords = new List<string>();
@@ -140,20 +144,20 @@ public class KannadaAsciiConverter
         {
             // Preprocess: apply rule-defined duplicate collapse and internal-space cleanup
             var preprocessed = PreprocessAsciiInput(word);
-            processedWords.Add(ProcessWord(preprocessed));
+            processedWords.Add(ProcessWord(preprocessed, convertToEnglishDigit));
         }
 
         return string.Join(" ", processedWords);
     }
 
-    public string ReverseConvert(string unicodeText)
+    public string ReverseConvert(string unicodeText, bool convertToEnglishDigit = false)
     {
         var words = unicodeText.Split(' ');
         var processedWords = new List<string>();
 
         foreach (var word in words)
         {
-            processedWords.Add(ReverseProcessWord(word));
+            processedWords.Add(ReverseProcessWord(word, convertToEnglishDigit));
         }
 
         return string.Join(" ", processedWords);
@@ -200,7 +204,17 @@ public class KannadaAsciiConverter
         {
             if (position + 1 < word.Length && word[position] == word[position + 1])
             {
-                if (ShouldPreserveDuplicateSequence(word, position))
+                if (IsNumericCharacter(word[position]))
+                {
+                    result.Append(word[position]);
+                    position++;
+                }
+                else if (ShouldPreserveDuplicateSequence(word, position))
+                {
+                    result.Append(word[position]);
+                    position++;
+                }
+                else if (ShouldPreserveDuplicateSymbol(word[position]))
                 {
                     result.Append(word[position]);
                     position++;
@@ -227,7 +241,7 @@ public class KannadaAsciiConverter
         return result.ToString();
     }
 
-    private string ProcessWord(string word)
+    private string ProcessWord(string word, bool convertToEnglishDigit)
     {
         var op = new List<string>();
         int i = 0;
@@ -241,7 +255,7 @@ public class KannadaAsciiConverter
                 continue;
             }
 
-            var (charsToSkip, result) = FindMapping(op, word, i);
+            var (charsToSkip, result) = FindMapping(op, word, i, convertToEnglishDigit);
             op = result;
 
             // Lightweight fix: only check last 2 items for ordering issues
@@ -312,7 +326,7 @@ public class KannadaAsciiConverter
     }
 
 
-    private (int, List<string>) FindMapping(List<string> op, string txt, int currentPos)
+    private (int, List<string>) FindMapping(List<string> op, string txt, int currentPos, bool convertToEnglishDigit)
     {
         int maxLen = _maxSequenceLength;
         int remaining = txt.Length - currentPos;
@@ -341,7 +355,7 @@ public class KannadaAsciiConverter
 
             string t = txt.Substring(currentPos, i + 1);
 
-            if (_mapping.ContainsKey(t))
+            if (_mapping.TryGetValue(t, out var directValue))
             {
                 // BUGFIX: Check if matching this sequence would unnecessarily fragment valid longer sequences
                 // Specifically: don't match sequences ending in "A" if they would prevent "AiÀ..."patterns from matching
@@ -372,8 +386,16 @@ public class KannadaAsciiConverter
                 // This match is valid
                 matchedLen = i;
                 matchedSequence = t;
-                matchedValue = _mapping[t];
+                matchedValue = directValue;
                 break; // Found best match, exit loop
+            }
+
+            if (_additionalMappings.TryGetValue(t, out var additionalValue))
+            {
+                matchedLen = i;
+                matchedSequence = t;
+                matchedValue = additionalValue;
+                break;
             }
         }
 
@@ -398,7 +420,11 @@ public class KannadaAsciiConverter
         var letters = op.Join("").ToList();
         string singleChar = txt[currentPos].ToString();
 
-        if (_asciiArkavattu.ContainsKey(singleChar))
+        if (TryMapUnicodeDigit(singleChar, convertToEnglishDigit, out var digitValue))
+        {
+            op.Add(digitValue);
+        }
+        else if (_asciiArkavattu.ContainsKey(singleChar))
         {
             op = ProcessArkavattu(letters, singleChar);
         }
@@ -410,12 +436,54 @@ public class KannadaAsciiConverter
         {
             op = ProcessBrokenCases(letters, singleChar);
         }
+        else if (_additionalMappings.TryGetValue(singleChar, out var additionalValue))
+        {
+            op.Add(additionalValue);
+        }
         else
         {
             op.Add(singleChar);
         }
 
         return (0, op);
+    }
+
+    private static bool IsNumericCharacter(char ch)
+    {
+        return (ch >= '\u0CE6' && ch <= '\u0CE9') || (ch >= '0' && ch <= '9');
+    }
+
+    private static bool ShouldPreserveDuplicateSymbol(char ch)
+    {
+        return !char.IsLetterOrDigit(ch) && !char.IsWhiteSpace(ch);
+    }
+
+    private static bool TryMapUnicodeDigit(string singleChar, bool convertToEnglishDigit, out string mappedValue)
+    {
+        mappedValue = string.Empty;
+
+        if (singleChar.Length != 1)
+            return false;
+
+        char ch = singleChar[0];
+
+        if (ch >= '0' && ch <= '9')
+        {
+            mappedValue = convertToEnglishDigit
+                ? singleChar
+                : ((char)('೦' + (ch - '0'))).ToString();
+            return true;
+        }
+
+        if (ch >= '\u0CE6' && ch <= '\u0CE9')
+        {
+            mappedValue = convertToEnglishDigit
+                ? (ch - '\u0CE6').ToString()
+                : singleChar;
+            return true;
+        }
+
+        return false;
     }
 
     private List<string> ProcessVattakshara(List<string> letters, string t)
@@ -504,7 +572,7 @@ public class KannadaAsciiConverter
         return letters;
     }
 
-    private string ReverseProcessWord(string word)
+    private string ReverseProcessWord(string word, bool convertToEnglishDigit)
     {
         var result = new StringBuilder();
         int i = 0;

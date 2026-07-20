@@ -6,8 +6,23 @@
       "description": "Simple consonant"
     },
     {
+      "ascii": "೧೧",
+      "unicode": "೧೧",
+      "description": "Simple number"
+    },
+    {
+      "ascii": "||",
+      "unicode": "||",
+      "description": "Simple number"
+    },
+    {
       "ascii": "««zsÀ",
       "unicode": "ವಿವಿಧ",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "zÀÄµÀÌøvÀªÀ",
+      "unicode": "ದುಷ್ಕೃತವ",
       "description": "Simple consonant"
     },
     {

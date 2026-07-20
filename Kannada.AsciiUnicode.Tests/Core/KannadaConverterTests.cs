@@ -67,6 +67,20 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Equal(expectedUnicode, result);
         }
 
+        [Fact]
+        public void ConvertAsciiToUnicode_Should_Convert_English_Digits_To_Kannada_Digits_By_Default()
+        {
+            var result = _converter.ConvertAsciiToUnicode("12345");
+            Assert.Equal("೧೨೩೪೫", result);
+        }
+
+        [Fact]
+        public void ConvertAsciiToUnicode_Should_Allow_English_Digit_Output_When_Requested()
+        {
+            var result = _converter.ConvertAsciiToUnicode("12345", convertToEnglishDigit: true);
+            Assert.Equal("12345", result);
+        }
+
         // =====================================================
         // UNICODE → ASCII CONVERSION
         // =====================================================
@@ -166,6 +180,15 @@ namespace Kannada.AsciiUnicode.Tests.Core
             var parts = result.Split(' ');
             Assert.Equal(2, parts.Length);
             Assert.Equal("ಕ", parts[0]);
+        }
+
+        [Fact]
+        public void ConvertAsciiToUnicode_Should_Preserve_Indentation_And_Line_Breaks()
+        {
+            var input = "  PÀ   PÀ\n    PÀ";
+            var result = _converter.ConvertAsciiToUnicode(input);
+
+            Assert.Equal("  ಕ   ಕ\n    ಕ", result);
         }
 
         // =====================================================

@@ -36,7 +36,7 @@ namespace Kannada.AsciiUnicode.Converters
             // Load default mappings
             var (defaultMapping, brokenCases, vattaksharagalu, asciiArkavattu,
                  dependentVowels, ignoreList, collapseDuplicateCharacters,
-                 removeInternalSpaces, reverseMapping) = KannadaMappingLoader.LoadMappings();
+                 removeInternalSpaces, reverseMapping, additionalMappings) = KannadaMappingLoader.LoadMappings();
 
             // Merge custom mappings if provided
             if (customMapping != null && customMapping.Count > 0)
@@ -59,29 +59,30 @@ namespace Kannada.AsciiUnicode.Converters
                 collapseDuplicateCharacters,
                 removeInternalSpaces,
                 reverseMapping,
+                additionalMappings,
                 maxSequenceLength
             );
         }
 
-        public string ConvertAsciiToUnicode(string asciiText)
+        public string ConvertAsciiToUnicode(string asciiText, bool convertToEnglishDigit = false)
         {
             if (asciiText == null) throw new ArgumentNullException(nameof(asciiText));
-            return string.IsNullOrEmpty(asciiText) ? string.Empty : _converter.Convert(asciiText);
+            return string.IsNullOrEmpty(asciiText) ? string.Empty : _converter.Convert(asciiText, convertToEnglishDigit);
         }
 
-        public string ConvertUnicodeToAscii(string unicodeText)
+        public string ConvertUnicodeToAscii(string unicodeText, bool convertToEnglishDigit = false)
         {
             if (unicodeText == null) throw new ArgumentNullException(nameof(unicodeText));
-            return string.IsNullOrEmpty(unicodeText) ? string.Empty : _converter.ReverseConvert(unicodeText);
+            return string.IsNullOrEmpty(unicodeText) ? string.Empty : _converter.ReverseConvert(unicodeText, convertToEnglishDigit);
         }
 
-        public string Convert(string text, KannadaAsciiFormat format)
+        public string Convert(string text, KannadaAsciiFormat format, bool convertToEnglishDigit = false)
         {
             if (text == null) throw new ArgumentNullException(nameof(text));
             return format switch
             {
-                KannadaAsciiFormat.Nudi => ConvertAsciiToUnicode(text),
-                KannadaAsciiFormat.Baraha => ConvertAsciiToUnicode(text),
+                KannadaAsciiFormat.Nudi => ConvertAsciiToUnicode(text, convertToEnglishDigit),
+                KannadaAsciiFormat.Baraha => ConvertAsciiToUnicode(text, convertToEnglishDigit),
                 _ => text
             };
         }

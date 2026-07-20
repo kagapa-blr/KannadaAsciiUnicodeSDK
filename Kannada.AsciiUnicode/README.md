@@ -26,13 +26,17 @@ using Kannada.AsciiUnicode.Converters;
 // Use singleton instance (default maxSequenceLength=8)
 var converter = KannadaConverter.Instance;
 
-// Convert ASCII to Unicode
+// Convert ASCII to Unicode (default: preserve Kannada digits)
 string unicode = converter.ConvertAsciiToUnicode("PÀ£ÀßqÀ");
 Console.WriteLine(unicode); // ಕನ್ನಡ
 
 // Convert Unicode to ASCII
 string ascii = converter.ConvertUnicodeToAscii("ಕನ್ನಡ");
 Console.WriteLine(ascii); // PÀ£ÀßqÀ
+
+// Optional: output English digits instead of Kannada digits
+string englishDigits = converter.ConvertAsciiToUnicode("12345", convertToEnglishDigit: true);
+Console.WriteLine(englishDigits); // 12345
 ```
 
 ### With Configurable Max Sequence Length
@@ -59,7 +63,20 @@ var customConverter = KannadaConverter.CreateWithCustomMapping(
 
 ## Recent Improvements
 
-This version includes significant enhancements to the conversion algorithm:
+This version includes several important enhancements to the conversion pipeline:
+
+### Digit Handling
+
+The API now supports an optional `convertToEnglishDigit` switch for digit conversion. By default, the converter preserves Kannada digits such as `೧೨೩`. When requested, it can emit English digits such as `123` instead.
+
+**Example**:
+
+```csharp
+var converter = KannadaConverter.Instance;
+
+string kannadaDigits = converter.ConvertAsciiToUnicode("12345");
+string englishDigits = converter.ConvertAsciiToUnicode("12345", convertToEnglishDigit: true);
+```
 
 ### Greedy Sequence Matching Fix
 
@@ -73,11 +90,15 @@ The algorithm now dynamically extends the sequence search to handle mappings lon
 
 **Impact**: Complex Kannada words with multiple consonant clusters and special character combinations are now converted with higher accuracy.
 
+### Symbol Preservation
+
+Repeated punctuation and symbol characters such as `||` are preserved during preprocessing instead of being collapsed unexpectedly.
+
 ### Test Coverage
 
-All 57 unit tests pass, including:
-- 50 basic conversion tests
-- 7 advanced conversion tests covering edge cases, conjuncts, and problematic character sequences
+All 69 unit tests pass, including:
+- basic conversion tests
+- advanced conversion tests covering edge cases, conjuncts, problematic character sequences, and digit handling
 
 ## Architecture
 
@@ -117,9 +138,9 @@ public sealed class KannadaConverter : IAsciiUnicodeConverter
     );
 
     // Conversion methods
-    public string ConvertAsciiToUnicode(string asciiText);
-    public string ConvertUnicodeToAscii(string unicodeText);
-    public string Convert(string text, KannadaAsciiFormat format);
+    public string ConvertAsciiToUnicode(string asciiText, bool convertToEnglishDigit = false);
+    public string ConvertUnicodeToAscii(string unicodeText, bool convertToEnglishDigit = false);
+    public string Convert(string text, KannadaAsciiFormat format, bool convertToEnglishDigit = false);
 }
 ```
 
@@ -153,7 +174,18 @@ string ascii = converter.ConvertUnicodeToAscii("ತೀಕ್ಷ್ಣ");        
 
 **When to use**: When you need domain-specific or proprietary character mappings beyond the default Nudi/Baraha formats.
 
-#### Pattern 2b: Custom Mappings with Custom Max Sequence Length
+#### Pattern 2b: Digit Output Mode
+
+```csharp
+var converter = KannadaConverter.Instance;
+
+string kannadaDigits = converter.ConvertAsciiToUnicode("12345");        // ೧೨೩೪೫
+string englishDigits = converter.ConvertAsciiToUnicode("12345", convertToEnglishDigit: true); // 12345
+```
+
+**When to use**: When your application should preserve Kannada numerals by default, but also allow an explicit English-digit mode.
+
+#### Pattern 2c: Custom Mappings with Custom Max Sequence Length
 
 If you have very long ASCII sequences in your mappings (e.g., 8+ characters), adjust `maxSequenceLength`:
 

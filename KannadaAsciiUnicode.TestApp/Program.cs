@@ -85,14 +85,14 @@ class Program
         long asciiDocxMs = DocxHelper.ConvertDocx(
             asciiInputDocx,
             asciiToUnicodeDocx,
-            converter.ConvertAsciiToUnicode);
+            text => converter.ConvertAsciiToUnicode(text));
 
         // Unicode → ASCII DOCX
         var unicodeToAsciiDocx = Path.Combine(outputDir, "unicode_to_ascii.docx");
         long unicodeDocxMs = DocxHelper.ConvertDocx(
             unicodeInputDocx,
             unicodeToAsciiDocx,
-            converter.ConvertUnicodeToAscii);
+            text => converter.ConvertUnicodeToAscii(text));
 
         var asciiDocxTime = TimeSpan.FromMilliseconds(asciiDocxMs);
         var unicodeDocxTime = TimeSpan.FromMilliseconds(unicodeDocxMs);

@@ -20,7 +20,8 @@ namespace Kannada.AsciiUnicode.Mappings
             HashSet<string> ignoreList,
             Dictionary<string, string> collapseDuplicateCharacters,
             Dictionary<string, string> removeInternalSpaces,
-            Dictionary<string, string> reverseMapping)
+            Dictionary<string, string> reverseMapping,
+            Dictionary<string, string> additionalMappings)
         LoadMappings()
         {
             var json = ReadEmbeddedResource(ResourceName);
@@ -29,6 +30,7 @@ namespace Kannada.AsciiUnicode.Mappings
             var mapping = LoadDictionary(root, "mapping");
             var reverseMapping = CreateReverseMapping(mapping);
             var preprocessingRules = root["preprocessingRules"] as JObject;
+            var additionalMappings = LoadOptionalDictionary(root, "additionalMappings");
 
             return (
                 mapping,
@@ -39,7 +41,8 @@ namespace Kannada.AsciiUnicode.Mappings
                 LoadHashSet(root, "ignoreList"),
                 LoadOptionalDictionary(preprocessingRules, "collapseDuplicateCharacters"),
                 LoadOptionalDictionary(preprocessingRules, "removeInternalSpaces"),
-                reverseMapping
+                reverseMapping,
+                additionalMappings
             );
         }
 

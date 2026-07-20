@@ -1,6 +1,8 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -45,8 +47,6 @@ namespace KannadaAsciiUnicode.TestApp.Helpers
                 if (string.IsNullOrWhiteSpace(originalText))
                     continue;
 
-                var convertedText = converter(originalText);
-
                 // Preserve paragraph properties (style, spacing, alignment)
                 ParagraphProperties? preservedProperties = null;
                 if (paragraph.ParagraphProperties != null)
@@ -55,25 +55,76 @@ namespace KannadaAsciiUnicode.TestApp.Helpers
                         (ParagraphProperties)paragraph.ParagraphProperties.CloneNode(true);
                 }
 
-                // Remove old runs
-                paragraph.RemoveAllChildren<Run>();
+                var preservedRuns = new List<Run>();
+                foreach (var run in paragraph.Elements<Run>().ToList())
+                {
+                    var runText = run.InnerText;
+                    if (string.IsNullOrWhiteSpace(runText))
+                    {
+                        preservedRuns.Add((Run)run.CloneNode(true));
+                        continue;
+                    }
 
-                // Restore properties
+                    var convertedRunText = converter(runText);
+
+                    var newRun = new Run();
+                    if (run.RunProperties != null)
+                    {
+                        newRun.AppendChild((RunProperties)run.RunProperties.CloneNode(true));
+                    }
+
+                    newRun.Append(new Text(convertedRunText)
+                    {
+                        Space = SpaceProcessingModeValues.Preserve
+                    });
+
+                    preservedRuns.Add(newRun);
+                }
+
+                paragraph.RemoveAllChildren<Run>();
                 paragraph.ParagraphProperties = preservedProperties;
 
-                // Insert converted text
-                paragraph.Append(
-                    new Run(
-                        new Text(convertedText)
-                        {
-                            Space = SpaceProcessingModeValues.Preserve
-                        }));
+                foreach (var preservedRun in preservedRuns)
+                {
+                    paragraph.Append(preservedRun);
+                }
             }
+
+            ApplyDefaultFontToDocument(body);
 
             mainPart.Document.Save();
             stopwatch.Stop();
 
             return stopwatch.ElapsedMilliseconds;
+        }
+
+        private static void ApplyDefaultFontToDocument(Body body)
+        {
+            foreach (var run in body.Descendants<Run>())
+            {
+                var runProperties = run.RunProperties ?? new RunProperties();
+                var runFonts = runProperties.GetFirstChild<RunFonts>();
+
+                if (runFonts == null)
+                {
+                    runFonts = new RunFonts
+                    {
+                        Ascii = "NudiParijatha",
+                        Hint = FontTypeHintValues.Default
+                    };
+                    runProperties.AppendChild(runFonts);
+                }
+                else
+                {
+                    runFonts.Ascii = "NudiParijatha";
+                    runFonts.Hint = FontTypeHintValues.Default;
+                }
+
+                if (run.RunProperties == null)
+                {
+                    run.AppendChild(runProperties);
+                }
+            }
         }
     }
 }
