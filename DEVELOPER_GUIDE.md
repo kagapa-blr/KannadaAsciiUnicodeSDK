@@ -1,4 +1,4 @@
-## Contributing to Kannada ASCII to Unicode Converter
+# Contributing to Kannada ASCII to Unicode Converter
 
 Thank you for your interest in contributing to this project. We welcome contributions from developers at all levels.
 
@@ -19,13 +19,13 @@ git clone https://github.com/kagapa-blr/KannadaAsciiUnicodeSDK.git
 cd KannadaAsciiUnicode
 ```
 
-2. Build the solution:
+1. Build the solution:
 
 ```bash
 dotnet build
 ```
 
-3. Run tests to verify setup:
+1. Run tests to verify setup:
 
 ```bash
 dotnet test
@@ -45,6 +45,7 @@ Add or refine ASCII to Unicode mappings for:
 **Location:** `Kannada.AsciiUnicode/Resources/NudiBarahaMapping.json`
 
 **How to contribute:**
+
 1. Edit `NudiBarahaMapping.json` to add new mappings
 2. Add your new mapping entries to the appropriate JSON sections
 3. Add corresponding test cases in `Kannada.AsciiUnicode.Tests/Core/KannadaConverterTests.cs`
@@ -60,6 +61,7 @@ Report and fix issues related to:
 - Edge cases in round-trip conversion
 
 **Process:**
+
 1. Create an issue describing the bug
 2. Include test cases that demonstrate the issue
 3. Submit a pull request with the fix
@@ -96,6 +98,7 @@ Improve or expand documentation for:
 - Troubleshooting common issues
 
 **Locations:**
+
 - `README.md` - Main overview
 - `Kannada.AsciiUnicode/README.md` - SDK documentation
 - Code comments and XML documentation
@@ -110,6 +113,7 @@ Identify and implement improvements for:
 - Batch processing capabilities
 
 **Requirements:**
+
 - Include performance benchmarks before and after
 - Ensure all tests pass
 - Document the optimization approach

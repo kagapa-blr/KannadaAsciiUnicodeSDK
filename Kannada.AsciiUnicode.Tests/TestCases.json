@@ -11,6 +11,31 @@
       "description": "Simple number"
     },
     {
+      "ascii": "AiÉÆÃ",
+      "unicode": "ಯೋ",
+      "description": "Simple number"
+    },
+    {
+      "ascii": "¸ÀAAiÉÆÃUÀ",
+      "unicode": "ಸಂಯೋಗ",
+      "description": "Simple number"
+    },
+    {
+      "ascii": "vÉÆÃ",
+      "unicode": "ತೋ",
+      "description": "Simple number"
+    },
+    {
+      "ascii": "¯ÁuÉ",
+      "unicode": "ಲಾಣೆ",
+      "description": "Simple number"
+    },
+    {
+      "ascii": "UÀÉÆÃzsÀ£À",
+      "unicode": "ಗೋಧನ",
+      "description": "Simple number"
+    },
+    {
       "ascii": "||",
       "unicode": "||",
       "description": "Simple number"
@@ -43,6 +68,11 @@
     {
       "ascii": "¹ÛçÃAiÀÄgÀÄ",
       "unicode": "ಸ್ತ್ರೀಯರು",
+      "description": "Simple consonant"
+    },
+    {
+      "ascii": "±À¸ÁÛç¸ÀÛçªÀ£ÀÄß",
+      "unicode": "ಶಸ್ತ್ರಾಸ್ತ್ರವನ‍್ನು",
       "description": "Simple consonant"
     },
     {
@@ -228,6 +258,16 @@
       "ascii": "d£À¦æAiÀÄ",
       "unicode": "ಜನಪ್ರಿಯ",
       "description": "Word meaning popular"
+    },
+    {
+      "ascii": "JµÀÖÀÄ",
+      "unicode": "ಎಷ್ಟು",
+      "description": "Spurious À after vattakshara before vowel"
+    },
+    {
+      "ascii": "£ÉÃgÀ¼ÉÀ",
+      "unicode": "ನೇರಳೆ",
+      "description": "Trailing stray À at end of word"
     }
   ],
   "unicodeToAscii": [

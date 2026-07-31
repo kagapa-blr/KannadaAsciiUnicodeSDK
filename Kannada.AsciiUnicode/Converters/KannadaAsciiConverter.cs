@@ -402,8 +402,10 @@ public class KannadaAsciiConverter
         // If we found a match, apply it
         if (matchedLen >= 0)
         {
-            // Add ZWJ if previous ends with halant
-            if (op.Count > 0)
+            // Add ZWJ if previous ends with halant, but only when the matched
+            // value does NOT itself start with halant (e.g. ್ರ from æ/ç).
+            // Values starting with ್ are conjunct continuations and need no ZWJ.
+            if (op.Count > 0 && !matchedValue.StartsWith("\u0CCD"))
             {
                 string lastChar = op[op.Count - 1];
                 if (lastChar.EndsWith('\u0CCD'.ToString())) // Halant
@@ -440,6 +442,10 @@ public class KannadaAsciiConverter
         {
             op.Add(additionalValue);
         }
+        else if (IsStrayDiacritic(singleChar, txt, currentPos))
+        {
+            // skip: stray À with no valid mapping context
+        }
         else
         {
             op.Add(singleChar);
@@ -456,6 +462,26 @@ public class KannadaAsciiConverter
     private static bool ShouldPreserveDuplicateSymbol(char ch)
     {
         return !char.IsLetterOrDigit(ch) && !char.IsWhiteSpace(ch);
+    }
+
+    /// <summary>
+    /// Returns true when a bare 'À' (U+00C0) has no valid mapping context:
+    /// neither the char alone nor 'À' + next char(s) form any mapping prefix.
+    /// These are OCR/encoding artifacts that should be silently dropped.
+    /// </summary>
+    private bool IsStrayDiacritic(string ch, string txt, int pos)
+    {
+        if (ch != "À") return false;
+
+        // If 'À' + next char starts a valid mapping prefix, it is NOT stray
+        if (pos + 1 < txt.Length)
+        {
+            string withNext = "À" + txt[pos + 1];
+            if (_mappingKeyPrefixes.Contains(withNext))
+                return false;
+        }
+
+        return true;
     }
 
     private static bool TryMapUnicodeDigit(string singleChar, bool convertToEnglishDigit, out string mappedValue)
