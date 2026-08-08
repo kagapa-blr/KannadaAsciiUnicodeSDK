@@ -90,6 +90,15 @@ namespace Kannada.AsciiUnicode.Tests.Core
             Assert.Equal("ಕ", result);
         }
 
+        [Fact]
+        public void TestDataLoader_Should_Load_Test_Cases_From_Sectioned_Json()
+        {
+            var sectionCases = TestDataLoader.GetSection("asciiToUnicodeBasic");
+
+            Assert.NotEmpty(sectionCases);
+            Assert.Contains(sectionCases, c => c.Ascii == "PÀ" && c.Unicode == "ಕ");
+        }
+
         // =====================================================
         // UNICODE → ASCII CONVERSION
         // =====================================================

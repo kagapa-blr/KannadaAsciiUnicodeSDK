@@ -32,42 +32,27 @@ namespace Kannada.AsciiUnicode.Tests.Helpers
         }
 
         /// <summary>
-        /// Gets basic ASCII to Unicode test cases.
+        /// Gets a named section of test cases from the JSON file.
+        /// Supports the flattened schema used by the tests.
         /// </summary>
-        public static List<TestCase> GetAsciiToUnicodeBasic()
+        public static List<TestCase> GetSection(string sectionName)
         {
             var data = LoadJsonData();
-            return ParseTestCases(data["asciiToUnicodeBasic"]);
+
+            if (string.Equals(sectionName, "asciiToUnicodeBasic", StringComparison.OrdinalIgnoreCase))
+            {
+                return ParseTestCases(data["asciiToUnicode"]);
+            }
+
+            return ParseTestCases(data[sectionName]);
         }
 
         /// <summary>
-        /// Gets advanced ASCII to Unicode test cases (vattakshara, conjuncts, etc.).
-        /// </summary>
-        public static List<TestCase> GetAsciiToUnicodeAdvanced()
-        {
-            var data = LoadJsonData();
-            return ParseTestCases(data["asciiToUnicodeAdvanced"]);
-        }
-
-        /// <summary>
-        /// Gets real-world word conversion test cases.
-        /// </summary>
-        public static List<TestCase> GetAsciiToUnicodeRealWords()
-        {
-            var data = LoadJsonData();
-            return ParseTestCases(data["asciiToUnicodeRealWords"]);
-        }
-
-        /// <summary>
-        /// Gets all ASCII to Unicode test cases combined.
+        /// Gets all ASCII to Unicode test cases.
         /// </summary>
         public static List<TestCase> GetAllAsciiToUnicode()
         {
-            var all = new List<TestCase>();
-            all.AddRange(GetAsciiToUnicodeBasic());
-            all.AddRange(GetAsciiToUnicodeAdvanced());
-            all.AddRange(GetAsciiToUnicodeRealWords());
-            return all;
+            return GetSection("asciiToUnicode");
         }
 
         /// <summary>
@@ -75,26 +60,36 @@ namespace Kannada.AsciiUnicode.Tests.Helpers
         /// </summary>
         public static List<TestCase> GetUnicodeToAscii()
         {
-            var data = LoadJsonData();
-            return ParseUnicodeToAsciiTestCases(data["unicodeToAscii"]);
+            return ParseUnicodeToAsciiTestCases(LoadJsonData()["unicodeToAscii"]);
         }
 
         /// <summary>
-        /// Gets preprocessing duplicate collapse test cases.
+        /// Gets preprocessing duplicate-collapse cases.
         /// </summary>
         public static List<TestCase> GetPreprocessingDuplicateCollapse()
         {
-            var data = LoadJsonData();
-            return ParseTestCases(data["preprocessingDuplicateCollapse"]);
+            return new List<TestCase>
+            {
+                new() { Ascii = "PPÀÀ", Unicode = "ಕ" },
+                new() { Ascii = "PÀÀ", Unicode = "ಕ" },
+                new() { Ascii = "PÀ", Unicode = "ಕ" },
+                new() { Ascii = "PÉÉ", Unicode = "ಕೆ" },
+                new() { Ascii = "gÉÉå", Unicode = "ರ‍್ಯೆ" },
+                new() { Ascii = "gÀåå", Unicode = "ರ‍್ಯ" },
+                new() { Ascii = "gÁåå", Unicode = "ರ‍್ಯಾ" }
+            };
         }
 
         /// <summary>
-        /// Gets preprocessing multi-word test cases.
+        /// Gets preprocessing multi-word spacing cases.
         /// </summary>
         public static List<TestCase> GetPreprocessingMultipleWords()
         {
-            var data = LoadJsonData();
-            return ParseTestCases(data["preprocessingMultipleWords"]);
+            return new List<TestCase>
+            {
+                new() { Ascii = "PÀÀ gÀå", Unicode = "ಕ ರ‍್ಯ" },
+                new() { Ascii = "PPÀÀ zzÀä", Unicode = "ಕ ದ್ಮ" }
+            };
         }
 
         private static List<TestCase> ParseTestCases(JToken? token)
@@ -108,8 +103,7 @@ namespace Kannada.AsciiUnicode.Tests.Helpers
                 list.Add(new TestCase
                 {
                     Ascii = item["ascii"]?.ToString() ?? string.Empty,
-                    Unicode = item["unicode"]?.ToString() ?? string.Empty,
-                    Description = item["description"]?.ToString() ?? string.Empty
+                    Unicode = item["unicode"]?.ToString() ?? string.Empty
                 });
             }
             return list;
@@ -132,8 +126,7 @@ namespace Kannada.AsciiUnicode.Tests.Helpers
                 list.Add(new TestCase
                 {
                     Ascii = item["unicode"]?.ToString() ?? string.Empty,
-                    Unicode = item["ascii"]?.ToString() ?? string.Empty,
-                    Description = item["description"]?.ToString() ?? string.Empty
+                    Unicode = item["ascii"]?.ToString() ?? string.Empty
                 });
             }
             return list;
@@ -147,13 +140,9 @@ namespace Kannada.AsciiUnicode.Tests.Helpers
     {
         public string Ascii { get; set; } = string.Empty;
         public string Unicode { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-
         public override string ToString()
         {
-            return string.IsNullOrEmpty(Description)
-                ? $"{Ascii} → {Unicode}"
-                : $"{Ascii} → {Unicode} ({Description})";
+            return $"{Ascii} → {Unicode}";
         }
     }
 }

@@ -137,30 +137,21 @@ public class KannadaAsciiConverter
 
     public string Convert(string text, bool convertToEnglishDigit = false)
     {
-        var words = text.Split(' ');
-        var processedWords = new List<string>();
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
 
-        foreach (var word in words)
-        {
-            // Preprocess: apply rule-defined duplicate collapse and internal-space cleanup
-            var preprocessed = PreprocessAsciiInput(word);
-            processedWords.Add(ProcessWord(preprocessed, convertToEnglishDigit));
-        }
-
-        return string.Join(" ", processedWords);
+        // Process the full input as one stream so mappings that intentionally
+        // include spaces (for example, "gÀæ å") can be matched correctly.
+        var preprocessed = PreprocessAsciiInput(text);
+        return ProcessWord(preprocessed, convertToEnglishDigit);
     }
 
     public string ReverseConvert(string unicodeText, bool convertToEnglishDigit = false)
     {
-        var words = unicodeText.Split(' ');
-        var processedWords = new List<string>();
+        if (string.IsNullOrEmpty(unicodeText))
+            return string.Empty;
 
-        foreach (var word in words)
-        {
-            processedWords.Add(ReverseProcessWord(word, convertToEnglishDigit));
-        }
-
-        return string.Join(" ", processedWords);
+        return ReverseProcessWord(unicodeText, convertToEnglishDigit);
     }
 
     /// <summary>
@@ -202,26 +193,34 @@ public class KannadaAsciiConverter
 
         while (position < word.Length)
         {
+            char currentChar = word[position];
+
+            if (char.IsWhiteSpace(currentChar))
+            {
+                result.Append(currentChar);
+                position++;
+                continue;
+            }
+
             if (position + 1 < word.Length && word[position] == word[position + 1])
             {
-                if (IsNumericCharacter(word[position]))
+                if (IsNumericCharacter(currentChar))
                 {
-                    result.Append(word[position]);
+                    result.Append(currentChar);
                     position++;
                 }
                 else if (ShouldPreserveDuplicateSequence(word, position))
                 {
-                    result.Append(word[position]);
+                    result.Append(currentChar);
                     position++;
                 }
-                else if (ShouldPreserveDuplicateSymbol(word[position]))
+                else if (ShouldPreserveDuplicateSymbol(currentChar))
                 {
-                    result.Append(word[position]);
+                    result.Append(currentChar);
                     position++;
                 }
                 else
                 {
-                    var currentChar = word[position];
                     result.Append(currentChar);
                     position++;
 
@@ -233,7 +232,7 @@ public class KannadaAsciiConverter
             }
             else
             {
-                result.Append(word[position]);
+                result.Append(currentChar);
                 position++;
             }
         }
